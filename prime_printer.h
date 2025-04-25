@@ -4,33 +4,28 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 void print()
 {
-  int max_primes = 300;
-  int rows_per_page = 50;
-  int columns_per_row = 4;
-  int max_ord = 30;
-  int primes[max_primes + 1];
-  int page_number;
-  int page_offset;
-  int row_offset;
-  int column;
-  int current_number;
-  int prime_count;
-  bool is_prime;
-  int current_ord;
-  int current_square;
+  const int kMaxPrimes = 300;
+  const int kRowsPerPage = 50;
+  const int kColumnsPerRow = 4;
+  const int kMaxOrd = 30;
+
+  std::vector<int> primes(kMaxPrimes + 1);
+  std::vector<int> multiples(kMaxOrd + 1);
+
+  bool is_prime = true;
+  int current_number = 1;
+  int prime_count = 1;
+  int current_ord = 2;
+  int current_square = 9;
   int mult_index = 0;
-  int multiples[max_ord + 1];
 
-  current_number = 1;
-  prime_count = 1;
   primes[1] = 2;
-  current_ord = 2;
-  current_square = 9;
 
-  while (prime_count < max_primes)
+  while (prime_count < kMaxPrimes)
   {
     do
     {
@@ -58,24 +53,24 @@ void print()
     primes[prime_count] = current_number;
   }
 
-  page_number = 1;
-  page_offset = 1;
-  while (page_offset <= max_primes)
+  int page_number = 1;
+  int page_offset = 1;
+  while (page_offset <= kMaxPrimes)
   {
     std::cout << "The First ";
-    std::cout << max_primes;
+    std::cout << kMaxPrimes;
     std::cout << " Prime Numbers --- Page ";
     std::cout << page_number;
     std::cout << std::endl;
-    for (row_offset = page_offset; row_offset <= page_offset + rows_per_page - 1; row_offset++)
+    for (int row_offset = page_offset; row_offset <= page_offset + kRowsPerPage - 1; row_offset++)
     {
-      for (column = 0; column <= columns_per_row - 1; column++)
-        if (row_offset + column * rows_per_page <= max_primes)
-          std::cout << std::setw(10) << primes[row_offset + column * rows_per_page];
+      for (int current_column_index = 0; current_column_index <= kColumnsPerRow - 1; current_column_index++)
+        if (row_offset + current_column_index * kRowsPerPage <= kMaxPrimes)
+          std::cout << std::setw(10) << primes[row_offset + current_column_index * kRowsPerPage];
       std::cout << std::endl;
     }
     std::cout << "\f" << std::endl;
     page_number++;
-    page_offset += rows_per_page * columns_per_row;
+    page_offset += kRowsPerPage * kColumnsPerRow;
   }
 }
