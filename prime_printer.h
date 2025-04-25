@@ -56,7 +56,20 @@ std::vector<int> generatePrimeNumbers(int num_primes = 300)
   return primes;
 }
 
-void printPrimeNumbers(int num_primes, std::vector<int> &primes)
+void printPrimeNumbersByLine(const std::vector<int> &primes, int row_offset, int num_primes)
+{
+  for (int column_idx = 0; column_idx < kColumnsPerRow; column_idx++)
+  {
+    int index = row_offset + column_idx * kRowsPerPage;
+    if (index <= num_primes)
+    {
+      std::cout << std::setw(10) << primes[index];
+    }
+  }
+  std::cout << std::endl;
+}
+
+void printPrimeNumbers(std::vector<int> &primes, int num_primes = 300)
 {
   int page_number = 1;
   int page_offset = 1;
@@ -67,13 +80,16 @@ void printPrimeNumbers(int num_primes, std::vector<int> &primes)
     std::cout << " Prime Numbers --- Page ";
     std::cout << page_number;
     std::cout << std::endl;
-    for (int row_offset = page_offset; row_offset <= page_offset + kRowsPerPage - 1; row_offset++)
+    
+    for (int row = 0; row < kRowsPerPage; row++)
     {
-      for (int current_column_index = 0; current_column_index <= kColumnsPerRow - 1; current_column_index++)
-        if (row_offset + current_column_index * kRowsPerPage <= num_primes)
-          std::cout << std::setw(10) << primes[row_offset + current_column_index * kRowsPerPage];
-      std::cout << std::endl;
+      int row_offset = page_offset + row;
+      if (row_offset <= num_primes) // Only print rows that have primes
+      {
+        printPrimeNumbersByLine(primes, row_offset, num_primes);
+      }
     }
+    
     std::cout << "\f" << std::endl;
     page_number++;
     page_offset += kRowsPerPage * kColumnsPerRow;

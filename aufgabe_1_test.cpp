@@ -11,7 +11,7 @@ void TestPrintPrimes()
   std::streambuf *original_cout_buffer = std::cout.rdbuf();
   std::cout.rdbuf(output_file.rdbuf()); // Redirect cout to "YourPrint.txt"
   std::vector<int> primes = generatePrimeNumbers(kNumPrimes);
-  printPrimeNumbers(kNumPrimes, primes);
+  printPrimeNumbers(primes, kNumPrimes);
   output_file.close();
 
   std::ifstream reference_file("PerfectPrint.txt");

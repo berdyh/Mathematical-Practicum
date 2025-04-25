@@ -1,7 +1,10 @@
 #include "prime_printer.h"
 
+ 
 int main()
 {
-  generatePrimeNumbers();
+  std::vector<int> primes = generatePrimeNumbers();
+  printPrimeNumbers(primes);
+
   return 0;
 }
