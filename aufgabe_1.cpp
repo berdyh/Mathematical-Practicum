@@ -1,6 +1,7 @@
 #include "prime_printer.h"
 
-int main() {
+int main()
+{
   print();
   return 0;
 }

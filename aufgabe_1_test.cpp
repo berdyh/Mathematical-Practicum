@@ -1,7 +1,8 @@
 #include "mapra_test.h"
 #include "prime_printer.h"
 
-void TestPrintPrimes() {
+void TestPrintPrimes()
+{
   mapra::MapraTest test("PrimePrintTester");
 
   std::ofstream out("YourPrint.txt");
@@ -17,7 +18,8 @@ void TestPrintPrimes() {
   std::string leadLine;
   int i = 1;
   // Zeile fuer Zeile vergleichen
-  while (std::getline(goldFile, goldLine)) {
+  while (std::getline(goldFile, goldLine))
+  {
     std::stringstream ss;
     ss << "Line " << std::to_string(i) << "\t:";
     std::getline(leadFile, leadLine);
@@ -30,7 +32,8 @@ void TestPrintPrimes() {
   std::cout.rdbuf(coutbuf); // cout wieder auf Bildschirm leiten
 }
 
-int main() {
+int main()
+{
   TestPrintPrimes();
   return 0;
 }
