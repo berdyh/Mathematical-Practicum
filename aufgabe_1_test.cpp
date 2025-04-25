@@ -5,31 +5,33 @@ void TestPrintPrimes()
 {
   mapra::MapraTest test("PrimePrintTester");
 
-  std::ofstream out("YourPrint.txt");
-  std::streambuf *coutbuf = std::cout.rdbuf();
-  std::cout.rdbuf(out.rdbuf()); // cout auf Datei "YourPrint.txt" umleiten
+  std::ofstream output_file("YourPrint.txt");
+  std::streambuf *original_cout_buffer = std::cout.rdbuf();
+  std::cout.rdbuf(output_file.rdbuf()); // Redirect cout to "YourPrint.txt"
   print();
-  out.close();
+  output_file.close();
 
-  std::ifstream goldFile("PerfectPrint.txt");
-  std::ifstream leadFile("YourPrint.txt");
+  std::ifstream reference_file("PerfectPrint.txt");
+  std::ifstream test_file("YourPrint.txt");
 
-  std::string goldLine;
-  std::string leadLine;
-  int i = 1;
-  // Zeile fuer Zeile vergleichen
-  while (std::getline(goldFile, goldLine))
+  std::string reference_line;
+  std::string test_line;
+  int line_number = 1;
+
+  // Compare line by line
+  while (std::getline(reference_file, reference_line))
   {
     std::stringstream ss;
-    ss << "Line " << std::to_string(i) << "\t:";
-    std::getline(leadFile, leadLine);
-    test.AssertEq(ss.str(), goldLine, leadLine);
-    i++;
+    ss << "Line " << std::to_string(line_number) << "\t:";
+    std::getline(test_file, test_line);
+    test.AssertEq(ss.str(), reference_line, test_line);
+    line_number++;
   }
-  std::getline(leadFile, leadLine);
-  test.Assert("No more lines :", leadFile.eof());
+
+  std::getline(test_file, test_line);
+  test.Assert("No more lines :", test_file.eof());
   remove("YourPrint.txt");
-  std::cout.rdbuf(coutbuf); // cout wieder auf Bildschirm leiten
+  std::cout.rdbuf(original_cout_buffer); // Restore cout to console
 }
 
 int main()
