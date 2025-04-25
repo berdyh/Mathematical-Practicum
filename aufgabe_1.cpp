@@ -2,6 +2,6 @@
 
 int main()
 {
-  print();
+  generatePrimeNumbers();
   return 0;
 }

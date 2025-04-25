@@ -6,14 +6,16 @@
 #include <iomanip>
 #include <vector>
 
-void print(int num_primes = 300)
+const int kRowsPerPage = 50;
+const int kColumnsPerRow = 4;
+
+
+std::vector<int> generatePrimeNumbers(int num_primes = 300)
 {
-  const int kRowsPerPage = 50;
-  const int kColumnsPerRow = 4;
   const int kMaxOrd = 30;
 
-  std::vector<int> primes(num_primes + 1);
   std::vector<int> multiples(kMaxOrd + 1);
+  std::vector<int> primes(num_primes + 1);
 
   bool is_prime = true;
   int current_number = 1;
@@ -51,7 +53,11 @@ void print(int num_primes = 300)
     prime_count++;
     primes[prime_count] = current_number;
   }
+  return primes;
+}
 
+void printPrimeNumbers(int num_primes, std::vector<int> &primes)
+{
   int page_number = 1;
   int page_offset = 1;
   while (page_offset <= num_primes)
