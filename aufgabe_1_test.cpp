@@ -1,15 +1,18 @@
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 #include "mapra_test.h"
 #include "prime_printer.h"
 
-void TestPrintPrimes()
-{
+void TestPrintPrimes() {
   const int kNumPrimes = 300;
 
   mapra::MapraTest test("PrimePrintTester");
 
   std::ofstream output_file("YourPrint.txt");
   std::streambuf *original_cout_buffer = std::cout.rdbuf();
-  std::cout.rdbuf(output_file.rdbuf()); // Redirect cout to "YourPrint.txt"
+  std::cout.rdbuf(output_file.rdbuf());  // Redirect cout to "YourPrint.txt"
   std::vector<int> primes = generatePrimeNumbers(kNumPrimes);
   printPrimeNumbers(primes, kNumPrimes);
   output_file.close();
@@ -22,8 +25,7 @@ void TestPrintPrimes()
   int line_number = 1;
 
   // Compare line by line
-  while (std::getline(reference_file, reference_line))
-  {
+  while (std::getline(reference_file, reference_line)) {
     std::stringstream ss;
     ss << "Line " << std::to_string(line_number) << "\t:";
     std::getline(test_file, test_line);
@@ -34,11 +36,10 @@ void TestPrintPrimes()
   std::getline(test_file, test_line);
   test.Assert("No more lines :", test_file.eof());
   remove("YourPrint.txt");
-  std::cout.rdbuf(original_cout_buffer); // Restore cout to console
+  std::cout.rdbuf(original_cout_buffer);  // Restore cout to console
 }
 
-int main()
-{
+int main() {
   TestPrintPrimes();
   return 0;
 }
