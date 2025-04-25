@@ -6,14 +6,13 @@
 #include <iomanip>
 #include <vector>
 
-void print()
+void print(int num_primes = 300)
 {
-  const int kMaxPrimes = 300;
   const int kRowsPerPage = 50;
   const int kColumnsPerRow = 4;
   const int kMaxOrd = 30;
 
-  std::vector<int> primes(kMaxPrimes + 1);
+  std::vector<int> primes(num_primes + 1);
   std::vector<int> multiples(kMaxOrd + 1);
 
   bool is_prime = true;
@@ -25,7 +24,7 @@ void print()
 
   primes[1] = 2;
 
-  while (prime_count < kMaxPrimes)
+  while (prime_count < num_primes)
   {
     do
     {
@@ -55,17 +54,17 @@ void print()
 
   int page_number = 1;
   int page_offset = 1;
-  while (page_offset <= kMaxPrimes)
+  while (page_offset <= num_primes)
   {
     std::cout << "The First ";
-    std::cout << kMaxPrimes;
+    std::cout << num_primes;
     std::cout << " Prime Numbers --- Page ";
     std::cout << page_number;
     std::cout << std::endl;
     for (int row_offset = page_offset; row_offset <= page_offset + kRowsPerPage - 1; row_offset++)
     {
       for (int current_column_index = 0; current_column_index <= kColumnsPerRow - 1; current_column_index++)
-        if (row_offset + current_column_index * kRowsPerPage <= kMaxPrimes)
+        if (row_offset + current_column_index * kRowsPerPage <= num_primes)
           std::cout << std::setw(10) << primes[row_offset + current_column_index * kRowsPerPage];
       std::cout << std::endl;
     }

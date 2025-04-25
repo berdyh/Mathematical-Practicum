@@ -3,12 +3,14 @@
 
 void TestPrintPrimes()
 {
+  const int kNumPrimes = 300;
+
   mapra::MapraTest test("PrimePrintTester");
 
   std::ofstream output_file("YourPrint.txt");
   std::streambuf *original_cout_buffer = std::cout.rdbuf();
   std::cout.rdbuf(output_file.rdbuf()); // Redirect cout to "YourPrint.txt"
-  print();
+  print(kNumPrimes);
   output_file.close();
 
   std::ifstream reference_file("PerfectPrint.txt");
