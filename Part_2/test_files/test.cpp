@@ -1,4 +1,5 @@
 #include "../include/bubblesort.h"
+#include "../include/selectionsort.h"
 // #include others
 
 #include <cassert>
@@ -52,6 +53,7 @@ void RunManualTests(const Sorter& sorter) {
 int main() {
   std::vector<Sorter> algorithms = {
       {"BubbleSort", mapra::Bubblesort},
+      {"SelectionSort", mapra::Selectionsort},
       // Add others here
   };
 

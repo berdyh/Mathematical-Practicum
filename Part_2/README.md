@@ -66,12 +66,12 @@ cd Part_2
 ```
 Use the following command to compile and run the algorithms are correct:
 ```bash
-g++ -std=c++17 -Wall -Wextra -Wpedantic src/{all_algorithms} src/mapra_check.cpp unit.o -o mapra_check
+g++ -std=c++17 -Wall -Wextra -Wpedantic include/unit.o src/*.cpp test_files/mapra_check.cpp -o mapra_check
 ./mapra_check
 ```
 
 Use the following command to compile and run the test program:
 ```bash
-g++ -std=c++17 -Wall -Wextra -Wpedantic src/{all_algorithms} src/test.cpp unit.o -o test
+g++ -std=c++17 -Wall -Wextra -Wpedantic src/*.cpp test_files/test.cpp -o test
 ./test
 ```
