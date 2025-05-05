@@ -1,10 +1,10 @@
 // Copyright (c) 2022, The MaPra Authors.
 
-#include "mapra_test.h"
-
 #include <algorithm>
 #include <iostream>
 #include <string>
+
+#include "../include/mapra_test.h"
 
 int main() {
   mapra::MapraTest test("Beispiel");

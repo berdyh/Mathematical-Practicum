@@ -57,3 +57,21 @@ flowchart TB
   MSCallM --> MStart
   MEnd    --> MSEnd
 ```
+
+## To run the code
+
+First make sure you are in the correct directory:
+```bash
+cd Part_2
+```
+Use the following command to compile and run the algorithms are correct:
+```bash
+g++ -std=c++17 -Wall -Wextra -Wpedantic src/{all_algorithms} src/mapra_check.cpp unit.o -o mapra_check
+./mapra_check
+```
+
+Use the following command to compile and run the test program:
+```bash
+g++ -std=c++17 -Wall -Wextra -Wpedantic src/{all_algorithms} src/test.cpp unit.o -o test
+./test
+```
