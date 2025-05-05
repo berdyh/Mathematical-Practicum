@@ -1,6 +1,7 @@
 #include "../include/bubblesort.h"
 #include "../include/heapsort.h"
 #include "../include/insertionsort.h"
+#include "../include/quicksort_simple.h"
 #include "../include/selectionsort.h"
 // #include others
 
@@ -58,6 +59,7 @@ int main() {
       {"SelectionSort", mapra::Selectionsort},
       {"InsertionSort", mapra::Insertionsort},
       {"HeapSort", mapra::Heapsort},
+      {"QuicksortSimple", mapra::QuicksortSimple},
       // Add others here
   };
 

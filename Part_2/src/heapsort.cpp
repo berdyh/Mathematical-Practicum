@@ -1,5 +1,6 @@
 #include "../include/heapsort.h"
 
+#include <utility>  // for std::swap
 #include <vector>
 
 namespace mapra {
