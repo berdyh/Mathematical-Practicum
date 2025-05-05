@@ -1,16 +1,16 @@
-#include "../include/bubblesort.h"
-#include "../include/heapsort.h"
-#include "../include/insertionsort.h"
-#include "../include/quicksort_median3.h"
-#include "../include/quicksort_simple.h"
-#include "../include/selectionsort.h"
-// #include others
-
 #include <cassert>
 #include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "../include/bubblesort.h"
+#include "../include/heapsort.h"
+#include "../include/insertionsort.h"
+#include "../include/mergesort.h"
+#include "../include/quicksort_median3.h"
+#include "../include/quicksort_simple.h"
+#include "../include/selectionsort.h"
 
 struct Sorter {
   std::string name;
@@ -62,7 +62,7 @@ int main() {
       {"HeapSort", mapra::Heapsort},
       {"QuicksortSimple", mapra::QuicksortSimple},
       {"QuicksortMedian3", mapra::QuicksortMedian3},
-      // Add others here
+      {"Mergesort", mapra::Mergesort},
   };
 
   for (const auto& s : algorithms) {

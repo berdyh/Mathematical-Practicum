@@ -11,6 +11,7 @@
 #include "../include/bubblesort.h"
 #include "../include/heapsort.h"
 #include "../include/insertionsort.h"
+#include "../include/mergesort.h"
 #include "../include/quicksort_median3.h"
 #include "../include/quicksort_simple.h"
 #include "../include/selectionsort.h"
@@ -28,7 +29,7 @@ int main() {
       {"HeapSort", mapra::Heapsort},
       {"QuicksortSimple", mapra::QuicksortSimple},
       {"QuicksortMedian3", mapra::QuicksortMedian3},
-      // Add others here
+      {"Mergesort", mapra::Mergesort},
   };
   mapra::MapraTest test("AllSorters");
 
