@@ -1,4 +1,5 @@
 #include "../include/bubblesort.h"
+#include "../include/insertionsort.h"
 #include "../include/selectionsort.h"
 // #include others
 
@@ -54,6 +55,7 @@ int main() {
   std::vector<Sorter> algorithms = {
       {"BubbleSort", mapra::Bubblesort},
       {"SelectionSort", mapra::Selectionsort},
+      {"InsertionSort", mapra::Insertionsort},
       // Add others here
   };
 
