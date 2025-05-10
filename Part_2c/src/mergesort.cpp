@@ -1,11 +1,15 @@
 #include "../include/mergesort.h"
 
+#include <string>
 #include <vector>
+
+#include "../include/student.h"
 
 namespace mapra {
 
-static void Merge(std::vector<unsigned int>& a, std::size_t lo, std::size_t mid,
-                  std::size_t hi, std::vector<unsigned int>& tmp) {
+template <typename T>
+static void Merge(std::vector<T>& a, std::size_t lo, std::size_t mid,
+                  std::size_t hi, std::vector<T>& tmp) {
   std::size_t i = lo, j = mid, k = lo;
   while (i < mid && j < hi) {
     tmp[k++] = (a[i] <= a[j] ? a[i++] : a[j++]);
@@ -17,8 +21,9 @@ static void Merge(std::vector<unsigned int>& a, std::size_t lo, std::size_t mid,
   }
 }
 
-static void MS(std::vector<unsigned int>& a, std::size_t lo, std::size_t hi,
-               std::vector<unsigned int>& tmp) {
+template <typename T>
+static void MS(std::vector<T>& a, std::size_t lo, std::size_t hi,
+               std::vector<T>& tmp) {
   if (hi - lo <= 1) return;
   std::size_t mid = lo + (hi - lo) / 2;
   MS(a, lo, mid, tmp);
@@ -26,9 +31,15 @@ static void MS(std::vector<unsigned int>& a, std::size_t lo, std::size_t hi,
   Merge(a, lo, mid, hi, tmp);
 }
 
-void Mergesort(std::vector<unsigned int>& array) {
-  std::vector<unsigned int> tmp(array.size());
+template <typename T>
+void Mergesort(std::vector<T>& array) {
+  std::vector<T> tmp(array.size());
   MS(array, 0, array.size(), tmp);
 }
+
+// Explicit template instantiations
+template void Mergesort(std::vector<double>&);
+template void Mergesort(std::vector<std::string>&);
+template void Mergesort(std::vector<Student>&);
 
 }  // namespace mapra

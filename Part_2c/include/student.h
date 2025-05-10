@@ -27,6 +27,13 @@ bool operator<(const Student&, const Student&);
 bool operator==(const Student&, const Student&);
 bool operator!=(const Student&, const Student&);
 
+// Vergleichsoperator "<"
+bool operator>(const Student&, const Student&);
+
+// Vergleichsoperatoren "<=" bzw. ">="
+bool operator<=(const Student&, const Student&);
+bool operator>=(const Student&, const Student&);
+
 }  // namespace mapra
 
 #endif  // STUDENT_H_

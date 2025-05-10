@@ -5,8 +5,9 @@
 
 namespace mapra {
 
-void Mergesort(std::vector<unsigned int>& array);
+template <typename T>
+void Mergesort(std::vector<T>& array);
 
-}
+}  // namespace mapra
 
 #endif

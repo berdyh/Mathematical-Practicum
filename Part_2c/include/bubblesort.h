@@ -5,7 +5,8 @@
 
 namespace mapra {
 
-void Bubblesort(std::vector<unsigned int>& array);
+template <typename T>
+void Bubblesort(std::vector<T>& array);
 
 }  // namespace mapra
 

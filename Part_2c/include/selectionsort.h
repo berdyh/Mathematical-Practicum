@@ -5,8 +5,9 @@
 
 namespace mapra {
 
-void Selectionsort(std::vector<unsigned int>& array);
+template <typename T>
+void Selectionsort(std::vector<T>& array);
 
-}
+}  // namespace mapra
 
 #endif

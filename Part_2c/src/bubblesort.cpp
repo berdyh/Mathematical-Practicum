@@ -1,10 +1,15 @@
 #include "../include/bubblesort.h"
 
+#include <string>
 #include <utility>  // for std::swap
+#include <vector>
+
+#include "../include/student.h"
 
 namespace mapra {
 
-void Bubblesort(std::vector<unsigned int>& array) {
+template <typename T>
+void Bubblesort(std::vector<T>& array) {
   const std::size_t n = array.size();  // size_t is an unsigned integer type
 
   for (std::size_t end = n; end > 1; --end) {
@@ -19,5 +24,10 @@ void Bubblesort(std::vector<unsigned int>& array) {
       break;
   }
 }
+
+// Explicit template instantiations
+template void Bubblesort(std::vector<double>&);
+template void Bubblesort(std::vector<std::string>&);
+template void Bubblesort(std::vector<Student>&);
 
 }  // namespace mapra

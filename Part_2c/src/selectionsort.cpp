@@ -1,10 +1,15 @@
 #include "../include/selectionsort.h"
 
+#include <string>
 #include <utility>  // for std::swap
+#include <vector>
+
+#include "../include/student.h"
 
 namespace mapra {
 
-void Selectionsort(std::vector<unsigned int>& array) {
+template <typename T>
+void Selectionsort(std::vector<T>& array) {
   const std::size_t n = array.size();
   for (std::size_t i = 0; i + 1 < n; ++i) {
     std::size_t min_idx = i;
@@ -18,5 +23,10 @@ void Selectionsort(std::vector<unsigned int>& array) {
     }
   }
 }
+
+// Explicit template instantiations
+template void Selectionsort(std::vector<double>&);
+template void Selectionsort(std::vector<std::string>&);
+template void Selectionsort(std::vector<Student>&);
 
 }  // namespace mapra

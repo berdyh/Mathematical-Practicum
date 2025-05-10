@@ -1,6 +1,6 @@
 // Copyright (c) 2022, The MaPra Authors.
 
-#include "include/student.h"
+#include "../include/student.h"
 
 // Eingabeoperator ">>"
 std::istream& mapra::operator>>(std::istream& s, mapra::Student& a) {
@@ -29,4 +29,19 @@ bool mapra::operator==(const mapra::Student& lhs, const mapra::Student& rhs) {
 
 bool mapra::operator!=(const mapra::Student& lhs, const mapra::Student& rhs) {
   return !(lhs == rhs);
+}
+
+// Vergleichsoperator ">"
+bool mapra::operator>(const mapra::Student& lhs, const mapra::Student& rhs) {
+  return rhs < lhs;
+}
+
+// Vergleichsoperator "<="
+bool mapra::operator<=(const mapra::Student& lhs, const mapra::Student& rhs) {
+  return (lhs < rhs || lhs == rhs);
+}
+
+// Vergleichsoperator ">="
+bool mapra::operator>=(const mapra::Student& lhs, const mapra::Student& rhs) {
+  return (lhs > rhs || lhs == rhs);
 }
