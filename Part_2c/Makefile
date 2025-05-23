@@ -1,37 +1,25 @@
-# Compiler and flags
+# -------------------------------------------------------------------
+# Makefile: builds `./sort` and `./test` using test/*.txt
+# -------------------------------------------------------------------
+
 CXX       := g++
-CXXFLAGS  := -std=c++17 -Wall -Wextra -Wpedantic -O2 -Iinclude
+CXXFLAGS  := -std=c++17 -Wall -Wextra -Wpedantic -Iinclude
 
-# Source files
-SRCDIR    := src
-TESTDIR   := test
-
-SRC_CPP   := $(wildcard $(SRCDIR)/*.cpp)
-TEST_CPP  := $(wildcard $(TESTDIR)/main.cpp)
-SRCS      := $(SRC_CPP) $(TEST_CPP)
-
-# Object files: .cpp → .o
-OBJS      := $(SRCS:.cpp=.o)
-
-# Precompiled unit tests object
+SRC_GLOB := src/*.cpp
 UNIT_OBJ  := include/unit.o
 
-# Final executable
-TARGET    := test/sort
+.PHONY: all sort test clean
 
-# Default target
-all: $(TARGET)
+all: sort test
 
-# Link everything
-$(TARGET): $(OBJS) $(UNIT_OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+# main test driver
+sort:
+	$(CXX) $(CXXFLAGS) $(UNIT_OBJ) $(SRC_GLOB) test_files/main.cpp -o sort
 
-# Compile .cpp → .o
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+# Secondary test driver
+test:
+	$(CXX) $(CXXFLAGS) $(UNIT_OBJ) $(SRC_GLOB) test_files/test.cpp -o test
 
-# Clean up
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f sort test
 
-.PHONY: all clean

@@ -16,9 +16,12 @@
 
 int main() {
   // 1) Open files
-  std::ifstream fd("doubles.txt");
-  std::ifstream fs("strings.txt");
-  std::ifstream fst("studenten.txt");
+  std::string path =
+      "/media/shoh/Shared/Shox/Projects/Math_prak/mein_code/Part_2c/"
+      "test_files/";
+  std::ifstream fd(path + "doubles.txt");
+  std::ifstream fs(path + "strings.txt");
+  std::ifstream fst(path + "studenten.txt");
   if (!fd || !fs || !fst) {
     std::cerr << "Error: could not open input files\n";
     return 1;
