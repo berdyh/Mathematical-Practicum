@@ -3,9 +3,10 @@
 
 #include <vector>
 
-namespace mapra {
+namespace mapra
+{
 
-void Heapsort(std::vector<unsigned int>& array);
+    void Heapsort(std::vector<unsigned int> &array);
 
 }
 

@@ -6,34 +6,36 @@
 #include <iostream>
 #include <string>
 
-namespace mapra {
+namespace mapra
+{
 
-struct Student {
-  std::string first_name;
-  std::string last_name;
-  int matr_nr;
-  double grade;
-};
-// Eingabeoperator ">>"
-std::istream& operator>>(std::istream&, Student&);
+  struct Student
+  {
+    std::string first_name;
+    std::string last_name;
+    int matr_nr;
+    double grade;
+  };
+  // Eingabeoperator ">>"
+  std::istream &operator>>(std::istream &, Student &);
 
-// Ausgabeoperator "<<"
-std::ostream& operator<<(std::ostream&, const Student&);
+  // Ausgabeoperator "<<"
+  std::ostream &operator<<(std::ostream &, const Student &);
 
-// Vergleichsoperator "<"
-bool operator<(const Student&, const Student&);
+  // Vergleichsoperator "<"
+  bool operator<(const Student &, const Student &);
 
-// Vergleichsoperatoren "==" bzw. "!="
-bool operator==(const Student&, const Student&);
-bool operator!=(const Student&, const Student&);
+  // Vergleichsoperatoren "==" bzw. "!="
+  bool operator==(const Student &, const Student &);
+  bool operator!=(const Student &, const Student &);
 
-// Vergleichsoperator "<"
-bool operator>(const Student&, const Student&);
+  // Vergleichsoperator "<"
+  bool operator>(const Student &, const Student &);
 
-// Vergleichsoperatoren "<=" bzw. ">="
-bool operator<=(const Student&, const Student&);
-bool operator>=(const Student&, const Student&);
+  // Vergleichsoperatoren "<=" bzw. ">="
+  bool operator<=(const Student &, const Student &);
+  bool operator>=(const Student &, const Student &);
 
-}  // namespace mapra
+} // namespace mapra
 
-#endif  // STUDENT_H_
+#endif // STUDENT_H_

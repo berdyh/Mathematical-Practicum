@@ -3,9 +3,10 @@
 
 #include <vector>
 
-namespace mapra {
+namespace mapra
+{
 
-void Mergesort(std::vector<unsigned int>& array);
+    void Mergesort(std::vector<unsigned int> &array);
 
 }
 

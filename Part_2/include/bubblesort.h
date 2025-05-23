@@ -3,10 +3,11 @@
 
 #include <vector>
 
-namespace mapra {
+namespace mapra
+{
 
-void Bubblesort(std::vector<unsigned int>& array);
+    void Bubblesort(std::vector<unsigned int> &array);
 
-}  // namespace mapra
+} // namespace mapra
 
 #endif

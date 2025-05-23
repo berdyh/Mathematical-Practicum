@@ -3,10 +3,11 @@
 
 #include <vector>
 
-namespace mapra {
+namespace mapra
+{
 
-void QuicksortMedian3(std::vector<unsigned int>& array);
+    void QuicksortMedian3(std::vector<unsigned int> &array);
 
 }
 
-#endif  // MAPRA_QUICKSORT_MEDIAN3_H_
+#endif // MAPRA_QUICKSORT_MEDIAN3_H_

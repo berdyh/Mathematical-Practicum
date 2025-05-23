@@ -12,9 +12,10 @@
 #include "../include/quicksort_simple.h"
 #include "../include/selectionsort.h"
 
-struct Sorter {
+struct Sorter
+{
   std::string name;
-  std::function<void(std::vector<unsigned int>&)> fn;
+  std::function<void(std::vector<unsigned int> &)> fn;
 };
 
 // Manual test cases: input → expected sorted output
@@ -29,22 +30,27 @@ const std::vector<
         {{5, 4, 3, 2, 1}, {1, 2, 3, 4, 5}},
 };
 
-void RunManualTests(const Sorter& sorter) {
+void RunManualTests(const Sorter &sorter)
+{
   std::cout << "--- " << sorter.name << " ---\n";
 
-  for (std::size_t i = 0; i < manual_tests.size(); ++i) {
+  for (std::size_t i = 0; i < manual_tests.size(); ++i)
+  {
     auto input = manual_tests[i].first;
-    const auto& expected = manual_tests[i].second;
+    const auto &expected = manual_tests[i].second;
 
     sorter.fn(input);
     bool ok = (input == expected);
 
     std::cout << "  test " << i << ": " << (ok ? "PASS" : "FAIL") << "\n";
-    if (!ok) {
+    if (!ok)
+    {
       std::cout << "    expected: ";
-      for (auto x : expected) std::cout << x << " ";
+      for (auto x : expected)
+        std::cout << x << " ";
       std::cout << "\n    got:      ";
-      for (auto x : input) std::cout << x << " ";
+      for (auto x : input)
+        std::cout << x << " ";
       std::cout << "\n";
     }
 
@@ -54,7 +60,8 @@ void RunManualTests(const Sorter& sorter) {
   std::cout << sorter.name << " passed all manual tests!\n\n";
 }
 
-int main() {
+int main()
+{
   std::vector<Sorter> algorithms = {
       {"BubbleSort", mapra::Bubblesort},
       {"SelectionSort", mapra::Selectionsort},
@@ -65,7 +72,8 @@ int main() {
       {"Mergesort", mapra::Mergesort},
   };
 
-  for (const auto& s : algorithms) {
+  for (const auto &s : algorithms)
+  {
     RunManualTests(s);
   }
 

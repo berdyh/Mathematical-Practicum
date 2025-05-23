@@ -3,9 +3,10 @@
 
 #include <vector>
 
-namespace mapra {
+namespace mapra
+{
 
-void Selectionsort(std::vector<unsigned int>& array);
+    void Selectionsort(std::vector<unsigned int> &array);
 
 }
 

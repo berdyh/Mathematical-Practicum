@@ -16,12 +16,14 @@
 #include "../include/quicksort_simple.h"
 #include "../include/selectionsort.h"
 
-struct Sorter {
+struct Sorter
+{
   std::string name;
-  std::function<void(std::vector<unsigned int>&)> fn;
+  std::function<void(std::vector<unsigned int> &)> fn;
 };
 
-int main() {
+int main()
+{
   std::vector<Sorter> algorithms = {
       {"BubbleSort", mapra::Bubblesort},
       {"SelectionSort", mapra::Selectionsort},
@@ -33,8 +35,10 @@ int main() {
   };
   mapra::MapraTest test("AllSorters");
 
-  for (const auto& sorter : algorithms) {
-    for (unsigned int id = 0; id < mapra::kNumExamples; ++id) {
+  for (const auto &sorter : algorithms)
+  {
+    for (unsigned int id = 0; id < mapra::kNumExamples; ++id)
+    {
       auto arr = mapra::GetExample(id);
       sorter.fn(arr);
       test.Assert(sorter.name + " example " + std::to_string(id),

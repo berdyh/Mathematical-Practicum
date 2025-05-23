@@ -16,3 +16,5 @@ Use the following command to compile and print out the prime numbers:
 g++ -std=c++17 -Wall -Wextra -Wpedantic aufgabe_1.cpp prime_printer.cpp -o printPrimeNumber
 ./printPrimeNumber
 ```
+
+To format the code in VSCode, press "Ctrl + Shift + I" or use the command palette("Ctrl + Shift + P") and search for “Format document”.

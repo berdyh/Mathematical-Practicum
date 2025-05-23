@@ -3,11 +3,12 @@
 
 #include <vector>
 
-namespace mapra {
+namespace mapra
+{
 
-template <typename T>
-void Mergesort(std::vector<T>& array);
+    template <typename T>
+    void Mergesort(std::vector<T> &array);
 
-}  // namespace mapra
+} // namespace mapra
 
 #endif

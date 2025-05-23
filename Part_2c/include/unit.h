@@ -9,14 +9,15 @@
 
 #include "student.h"
 
-namespace mapra {
+namespace mapra
+{
 
-// Funktionen zur Ueberpruefung der Ergebnisse
-// geben zurueck, ob ein Fehler entdeckt wurde
-bool CheckSolution(const std::vector<double>& array);
-bool CheckSolution(const std::vector<std::string>& array);
-bool CheckSolution(const std::vector<mapra::Student>& array);
+    // Funktionen zur Ueberpruefung der Ergebnisse
+    // geben zurueck, ob ein Fehler entdeckt wurde
+    bool CheckSolution(const std::vector<double> &array);
+    bool CheckSolution(const std::vector<std::string> &array);
+    bool CheckSolution(const std::vector<mapra::Student> &array);
 
-}  // namespace mapra
+} // namespace mapra
 
-#endif  // UNIT_H_
+#endif // UNIT_H_

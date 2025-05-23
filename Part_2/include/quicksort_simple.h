@@ -3,9 +3,10 @@
 
 #include <vector>
 
-namespace mapra {
+namespace mapra
+{
 
-void QuicksortSimple(std::vector<unsigned int>& array);
+    void QuicksortSimple(std::vector<unsigned int> &array);
 
 }
 

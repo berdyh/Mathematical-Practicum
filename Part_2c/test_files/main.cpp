@@ -14,7 +14,8 @@
 #include "../include/student.h"
 #include "../include/unit.h"
 
-int main() {
+int main()
+{
   // 1) Open files
   std::string path =
       "/media/shoh/Shared/Shox/Projects/Math_prak/mein_code/Part_2c/"
@@ -22,13 +23,14 @@ int main() {
   std::ifstream fd(path + "doubles.txt");
   std::ifstream fs(path + "strings.txt");
   std::ifstream fst(path + "studenten.txt");
-  if (!fd || !fs || !fst) {
+  if (!fd || !fs || !fst)
+  {
     std::cerr << "Error: could not open input files\n";
     return 1;
   }
 
   // 2) Read into vectors
-  std::vector<double> vd;  // for our sort routines
+  std::vector<double> vd; // for our sort routines
   std::vector<std::string> vs;
   std::vector<mapra::Student> vst;
   mapra::Read(fd, vd);
@@ -41,28 +43,29 @@ int main() {
   std::cin >> c;
 
   // 4) Dispatch
-  switch (c) {
-    case 'B':
-    case 'b':
-      mapra::Bubblesort(vd);
-      mapra::Bubblesort(vs);
-      mapra::Bubblesort(vst);
-      break;
-    case 'A':
-    case 'a':
-      mapra::Selectionsort(vd);
-      mapra::Selectionsort(vs);
-      mapra::Selectionsort(vst);
-      break;
-    case 'M':
-    case 'm':
-      mapra::Mergesort(vd);
-      mapra::Mergesort(vs);
-      mapra::Mergesort(vst);
-      break;
-    default:
-      std::cerr << "Unknown choice\n";
-      return 1;
+  switch (c)
+  {
+  case 'B':
+  case 'b':
+    mapra::Bubblesort(vd);
+    mapra::Bubblesort(vs);
+    mapra::Bubblesort(vst);
+    break;
+  case 'A':
+  case 'a':
+    mapra::Selectionsort(vd);
+    mapra::Selectionsort(vs);
+    mapra::Selectionsort(vst);
+    break;
+  case 'M':
+  case 'm':
+    mapra::Mergesort(vd);
+    mapra::Mergesort(vs);
+    mapra::Mergesort(vst);
+    break;
+  default:
+    std::cerr << "Unknown choice\n";
+    return 1;
   }
 
   // 5) Print results
@@ -74,9 +77,12 @@ int main() {
   mapra::Print(std::cout, vst);
 
   // 6) Verify
-  if (!mapra::CheckSolution(vd)) std::cerr << "Double sort failed!\n";
-  if (!mapra::CheckSolution(vs)) std::cerr << "String sort failed!\n";
-  if (!mapra::CheckSolution(vst)) std::cerr << "Student sort failed!\n";
+  if (!mapra::CheckSolution(vd))
+    std::cerr << "Double sort failed!\n";
+  if (!mapra::CheckSolution(vs))
+    std::cerr << "String sort failed!\n";
+  if (!mapra::CheckSolution(vst))
+    std::cerr << "Student sort failed!\n";
 
   return 0;
 }

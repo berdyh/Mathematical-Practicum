@@ -3,9 +3,10 @@
 
 #include <vector>
 
-namespace mapra {
+namespace mapra
+{
 
-void Insertionsort(std::vector<unsigned int>& array);
+    void Insertionsort(std::vector<unsigned int> &array);
 
 }
 
