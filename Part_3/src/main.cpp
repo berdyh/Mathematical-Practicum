@@ -15,8 +15,6 @@ int main(int argc, char *argv[])
     int output_interval = std::stoi(argv[4]);
 
     TabuSearch ts(datafile, tabu_duration);
-    std::cout << "Debug: " << ts.strVector(ts.getTabuList()) << "\n"
-              << "Debug: " << ts.strVector(ts.getCurrentSolution()) << std::endl;
     ts.run(iterations, output_interval);
 
     return 0;
