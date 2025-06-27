@@ -6,13 +6,17 @@ find_package(GTest REQUIRED)
 
 # Add test source
 add_executable(test_vector test/test_vector.cpp)
+add_executable(test_matrix test/test_matrix.cpp)
 
 # Link with GoogleTest and pthread (required by GTest)
 target_link_libraries(test_vector PRIVATE GTest::gtest GTest::gtest_main pthread)
+target_link_libraries(test_matrix PRIVATE GTest::gtest GTest::gtest_main pthread)
 
 # Add include directories
 target_include_directories(test_vector PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(test_matrix PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Register test
 enable_testing()
 add_test(NAME test_vector COMMAND test_vector)
+add_test(NAME test_matrix COMMAND test_matrix)
