@@ -1,22 +1,50 @@
-cmake_minimum_required(VERSION 3.10)
-project(Part4Tests LANGUAGES CXX)
+# Copyright (c) 2022, The MaPra Authors.
 
-# Find GoogleTest
-find_package(GTest REQUIRED)
+cmake_minimum_required(VERSION 3.13.3 FATAL_ERROR)
+cmake_policy(VERSION 3.13.3)
+# ##############################################################################
+# Build type (needs to be handled before project command below)
+# ##############################################################################
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE
+      "Release"
+      CACHE
+        STRING
+        "Configuration type (one of Debug, Release, RelWithDebInfo, MinSizeRel)"
+  )
+endif()
+message(STATUS "The build type is ${CMAKE_BUILD_TYPE}")
+#
+# ##############################################################################
+# Project metadata
+# ##############################################################################
+project(
+  mapra
+  LANGUAGES CXX
+  VERSION 1.0.0)
 
-# Add test source
-add_executable(test_vector test/test_vector.cpp)
-add_executable(test_matrix test/test_matrix.cpp)
+# ##############################################################################
+# Find dependencies
+# ##############################################################################
 
-# Link with GoogleTest and pthread (required by GTest)
-target_link_libraries(test_vector PRIVATE GTest::gtest GTest::gtest_main pthread)
-target_link_libraries(test_matrix PRIVATE GTest::gtest GTest::gtest_main pthread)
+include(${mapra_SOURCE_DIR}/cmake/dependencies.cmake)
 
-# Add include directories
-target_include_directories(test_vector PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(test_matrix PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# ##############################################################################
+# Add some helper functions to make this more pretty for you
+# ##############################################################################
+include(${mapra_SOURCE_DIR}/cmake/functions.cmake)
 
-# Register test
+# ##############################################################################
+# Unit Testing
+# ##############################################################################
+
 enable_testing()
-add_test(NAME test_vector COMMAND test_vector)
-add_test(NAME test_matrix COMMAND test_matrix)
+mapra_add_test(example_test)
+mapra_add_test(test_vector)
+mapra_add_test(test_matrix)
+
+# ##############################################################################
+# This function will create the makefiles for your solution
+# ##############################################################################
+
+mapra_add_executable(loesung src/loesung.cpp)
