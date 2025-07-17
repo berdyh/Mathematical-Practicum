@@ -4,12 +4,13 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <fstream>
 
 // Ein Graph, der Koordinaten von Knoten speichert.
 class CoordinateGraph : public DistanceGraph
 {
 private:
-  std::vector<std::pair<double, double>> coordinates; // (lat, lon) for each vertex
+  std::vector<std::pair<double, double>> coordinates; // (lon, lat) for each vertex
   std::vector<std::vector<std::pair<VertexT, CostT>>> adjacencyList;
 
 public:
@@ -77,12 +78,12 @@ public:
       graph.adjacencyList[from].push_back({to, cost});
     }
 
-    // Lese Koordinaten: lat, lon für jeden Knoten
+    // Lese Koordinaten: lon, lat für jeden Knoten
     for (std::size_t i = 0; i < numVertices; ++i)
     {
-      double lat, lon;
-      is >> lat >> lon;
-      graph.coordinates[i] = {lat, lon};
+      double lon, lat;
+      is >> lon >> lat;
+      graph.coordinates[i] = {lon, lat};
     }
 
     return is;
@@ -253,5 +254,4 @@ int main()
   // Loese die in der Aufgabenstellung beschriebenen Probleme fuer die jeweilige
   // Datei PruefeDijkstra / PruefeWeg
 
-  return 0;
 }
