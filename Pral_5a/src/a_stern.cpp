@@ -273,7 +273,7 @@ void Dijkstra(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
       CostT newCost = currentCost + edgeCost;
 
       // Aktualisiere die Distanz, wenn wir einen kürzeren Pfad gefunden haben
-      if (visited[neighbor] || newCost < kostenZumStart[neighbor])
+      if (newCost < kostenZumStart[neighbor])
       {
         kostenZumStart[neighbor] = newCost;
         pq.push({newCost, neighbor});
@@ -378,10 +378,164 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
 int main()
 {
   // Frage Beispielnummer vom User ab
+  std::cout << "Geben Sie die Beispielnummer ein (1-10): ";
+  int beispiel;
+  std::cin >> beispiel;
 
-  // Lade die zugehoerige Textdatei in einen Graphen
-  // PruefeHeuristik
+  TextVisualizer visualizer;
 
-  // Loese die in der Aufgabenstellung beschriebenen Probleme fuer die jeweilige
-  // Datei PruefeDijkstra / PruefeWeg
+  if (beispiel >= 1 && beispiel <= 4)
+  {
+    // Route graphs (Graph1-4.dat)
+    std::string filename = "daten/Graph" + std::to_string(beispiel) + ".dat";
+    std::ifstream file(filename);
+
+    if (!file.is_open())
+    {
+      std::cerr << "Fehler: Datei " << filename << " konnte nicht geöffnet werden." << std::endl;
+      return 1;
+    }
+
+    CoordinateGraph graph;
+    file >> graph;
+    file.close();
+
+    // PruefeHeuristik
+    if (!PruefeHeuristik(graph))
+    {
+      std::cerr << "Heuristik ist nicht zulässig!" << std::endl;
+      return 1;
+    }
+
+    std::cout << "Graph geladen. Anzahl Knoten: " << graph.numVertices() << std::endl;
+    std::cout << "Heuristik ist zulässig." << std::endl;
+
+    // Löse die in der Aufgabenstellung beschriebenen Probleme für route graphs
+    std::cout << "Teste Dijkstra für alle Startknoten..." << std::endl;
+    for (VertexT start = 0; start < graph.numVertices(); ++start)
+    {
+      std::vector<CostT> distances;
+      Dijkstra(graph, visualizer, start, distances);
+      PruefeDijkstra(beispiel, start, distances);
+    }
+    std::cout << "Dijkstra-Tests erfolgreich!" << std::endl;
+
+    std::cout << "Drücken Sie die Eingabetaste, um fortzufahren..." << std::endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // clear leftover input
+    std::cin.get();
+
+    // Testen A* für alle Knotenpaare
+    std::cout << "Teste A* für alle Knotenpaare..." << std::endl;
+    for (VertexT start = 0; start < graph.numVertices(); ++start)
+    {
+      for (VertexT goal = 0; goal < graph.numVertices(); ++goal)
+      {
+        if (start != goal)
+        {
+          std::list<VertexT> path;
+          if (A_star(graph, visualizer, start, goal, path))
+          {
+            PruefeWeg(beispiel, path);
+          }
+          else
+          {
+            std::cout << "Kein Weg von " << start << " zu " << goal << " gefunden." << std::endl;
+          }
+        }
+      }
+    }
+    std::cout << "A*-Tests erfolgreich!" << std::endl;
+  }
+  else if (beispiel >= 5 && beispiel <= 9)
+  {
+    // Maze graphs (Maze1-5.dat)
+    std::string filename = "daten/Maze" + std::to_string(beispiel - 4) + ".dat";
+    std::ifstream file(filename);
+
+    if (!file.is_open())
+    {
+      std::cerr << "Fehler: Datei " << filename << " konnte nicht geöffnet werden." << std::endl;
+      return 1;
+    }
+
+    MazeGraph graph;
+    file >> graph;
+    file.close();
+
+    // PruefeHeuristik
+    if (!PruefeHeuristik(graph))
+    {
+      std::cerr << "Heuristik ist nicht zulässig!" << std::endl;
+      return 1;
+    }
+
+    std::cout << "Labyrinth geladen. Anzahl Knoten: " << graph.numVertices() << std::endl;
+    std::cout << "Heuristik ist zulässig." << std::endl;
+
+    // Löse die in der Aufgabenstellung beschriebenen Probleme für maze graphs
+    // Bestimme Start-Ziel-Paare für dieses Beispiel
+    auto pairs = StartZielPaare(beispiel);
+    std::cout << "Teste A* für " << pairs.size() << " Start-Ziel-Paare..." << std::endl;
+
+    for (const auto &[start, goal] : pairs)
+    {
+      std::list<VertexT> path;
+      if (A_star(graph, visualizer, start, goal, path))
+      {
+        PruefeWeg(beispiel, path);
+        std::cout << "Weg von " << start << " zu " << goal << " gefunden (Länge: " << path.size() - 1 << ")" << std::endl;
+      }
+      else
+      {
+        std::cout << "Kein Weg von " << start << " zu " << goal << " gefunden." << std::endl;
+      }
+    }
+    std::cout << "Maze A*-Tests erfolgreich!" << std::endl;
+  }
+  else if (beispiel == 10)
+  {
+    // Random maze
+    const int width = 256, height = 256;
+    const unsigned int seed = 42; // Fiksierter Seed für Reproduzierbarkeit
+
+    auto mazeData = ErzeugeLabyrinth(width, height, seed);
+    MazeGraph graph(mazeData, width, height);
+    
+    std::cout << "Prüfe Heuristik für zufälliges Labyrinth..." << std::endl;
+    // PruefeHeuristik
+    if (!PruefeHeuristik(graph))
+    {
+      std::cerr << "Heuristik ist nicht zulässig!" << std::endl;
+      return 1;
+    }
+
+    std::cout << "Zufälliges Labyrinth erzeugt. Größe: " << width << "x" << height << std::endl;
+    std::cout << "Heuristik ist zulässig." << std::endl;
+
+    // Löse die in der Aufgabenstellung beschriebenen Probleme für random maze
+    // Finde den Pfad vom Start- zum Zielknoten
+    VertexT start = graph.getStartVertex();
+    VertexT goal = graph.getGoalVertex();
+
+    std::cout << "Teste A* im zufälligen Labyrinth von " << start << " zu " << goal << "..." << std::endl;
+    std::list<VertexT> path;
+    if (A_star(graph, visualizer, start, goal, path))
+    {
+      PruefeWeg(beispiel, path);
+      std::cout << "Weg gefunden! Länge: " << path.size() - 1 << std::endl;
+    }
+    else
+    {
+      std::cout << "Kein Weg gefunden." << std::endl;
+    }
+    std::cout << "Random Maze A*-Test erfolgreich!" << std::endl;
+  }
+  else
+  {
+    std::cerr << "Ungültige Beispielnummer! Bitte wählen Sie 1-10." << std::endl;
+    return 1;
+  }
+
+  std::cout << "Alle Tests erfolgreich abgeschlossen!" << std::endl;
+  return 0;
 }
