@@ -65,9 +65,12 @@ int main() {
     // Before working on the visualizer for your A*-algorithm, try to draw your
     // own stuff here! For instance:
 
+
     // - Use the font given in Font/BebasNeue-Regular.ttf to create texts
     // - Add different shapes and sprites and figure out more transforming
     // entities
+
+    
 
     // See https://www.sfml-dev.org/tutorials/2.5/#graphics-module for a good
     // tutorial!

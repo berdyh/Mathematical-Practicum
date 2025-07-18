@@ -91,18 +91,32 @@ target_compile_options(
 target_include_directories(a_stern PRIVATE "${mapra_SOURCE_DIR}/include/")
 
 if(${teil_b})
-  if((UNIX AND NOT APPLE) AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_include_directories(a_stern PRIVATE "${sfml_SOURCE_DIR}/include/")
+  # Try to find system SFML first
+  find_package(PkgConfig QUIET)
+  if(PKG_CONFIG_FOUND)
+      pkg_check_modules(SFML_SYSTEM QUIET sfml-all>=2.5)
   endif()
-
-  if((UNIX AND NOT APPLE) AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_link_libraries(
-      a_stern
-      PRIVATE "${sfml_SOURCE_DIR}/lib/libsfml-graphics.so"
-              "${sfml_SOURCE_DIR}/lib/libsfml-window.so"
-              "${sfml_SOURCE_DIR}/lib/libsfml-system.so")
+  
+  if(SFML_SYSTEM_FOUND)
+      message(STATUS "Using system SFML")
+      
+      # Link a_stern to system SFML
+      target_link_libraries(a_stern PRIVATE ${SFML_SYSTEM_LIBRARIES})
+      target_include_directories(a_stern PRIVATE ${SFML_SYSTEM_INCLUDE_DIRS})
+      
+      set(SFML_FOUND TRUE)
   else()
-    target_link_libraries(a_stern PRIVATE sfml-graphics sfml-window sfml-system)
+      # Fall back to downloaded SFML
+      if((UNIX AND NOT APPLE) AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+          target_include_directories(a_stern PRIVATE "${sfml_SOURCE_DIR}/include/")
+          target_link_libraries(
+            a_stern
+            PRIVATE "${sfml_SOURCE_DIR}/lib/libsfml-graphics.so"
+                    "${sfml_SOURCE_DIR}/lib/libsfml-window.so"
+                    "${sfml_SOURCE_DIR}/lib/libsfml-system.so")
+      else()
+          target_link_libraries(a_stern PRIVATE sfml-graphics sfml-window sfml-system)
+      endif()
   endif()
 
   # ############################################################################
@@ -110,31 +124,34 @@ if(${teil_b})
   add_executable(sfml_test "src/sfml_test.cpp")
 
   set_target_properties(
-    sfml_test PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS
-                                                                  OFF)
+    sfml_test PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+  
   target_compile_options(
     sfml_test
     PRIVATE
       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall
       -Wextra
       -Wpedantic>
-      $<$<CXX_COMPILER_ID:MSVC>:
-      /W4>)
+      $<$<CXX_COMPILER_ID:MSVC>: /W4>)
+  
   target_include_directories(sfml_test PRIVATE "${mapra_SOURCE_DIR}/include/")
 
-  if((UNIX AND NOT APPLE) AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_include_directories(sfml_test PRIVATE "${sfml_SOURCE_DIR}/include/")
-  endif()
-
-  if((UNIX AND NOT APPLE) AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_link_libraries(
-      sfml_test
-      PRIVATE "${sfml_SOURCE_DIR}/lib/libsfml-graphics.so"
-              "${sfml_SOURCE_DIR}/lib/libsfml-window.so"
-              "${sfml_SOURCE_DIR}/lib/libsfml-system.so")
+  # Link sfml_test - use system SFML if available
+  if(SFML_SYSTEM_FOUND)
+      message(STATUS "Linking sfml_test to system SFML")
+      target_link_libraries(sfml_test PRIVATE ${SFML_SYSTEM_LIBRARIES})
+      target_include_directories(sfml_test PRIVATE ${SFML_SYSTEM_INCLUDE_DIRS})
   else()
-    target_link_libraries(sfml_test PRIVATE sfml-graphics sfml-window
-                                            sfml-system)
+      # Fall back to downloaded SFML
+      if((UNIX AND NOT APPLE) AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+          target_include_directories(sfml_test PRIVATE "${sfml_SOURCE_DIR}/include/")
+          target_link_libraries(
+            sfml_test
+            PRIVATE "${sfml_SOURCE_DIR}/lib/libsfml-graphics.so"
+                    "${sfml_SOURCE_DIR}/lib/libsfml-window.so"
+                    "${sfml_SOURCE_DIR}/lib/libsfml-system.so")
+      else()
+          target_link_libraries(sfml_test PRIVATE sfml-graphics sfml-window sfml-system)
+      endif()
   endif()
-
 endif()
