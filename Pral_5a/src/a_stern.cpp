@@ -5,6 +5,8 @@
 #include <vector>
 #include <cmath>
 #include <fstream>
+#include <queue>
+#include <algorithm>
 
 // Ein Graph, der Koordinaten von Knoten speichert.
 class CoordinateGraph : public DistanceGraph
@@ -234,7 +236,53 @@ public:
 void Dijkstra(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
               std::vector<CostT> &kostenZumStart)
 {
-  // ...
+  // Initialisiere Distanzen und besuchte Menge
+  std::size_t n = g.numVertices();
+  kostenZumStart.assign(n, infty);
+  std::vector<bool> visited(n, false);
+
+  kostenZumStart[start] = 0.0;
+
+  // Priority queue: (cost, vertex) - min-heap
+  std::priority_queue<std::pair<CostT, VertexT>,
+                      std::vector<std::pair<CostT, VertexT>>,
+                      std::greater<std::pair<CostT, VertexT>>>
+      pq;
+
+  pq.push({0.0, start});
+  v.markVertex(start, VertexStatus::InQueue);
+
+  while (!pq.empty())
+  {
+    auto [currentCost, current] = pq.top();
+    pq.pop();
+
+    // Überspringen, wenn bereits verarbeitet (kann bei doppelten Einträgen passieren)
+    if (visited[current])
+      continue;
+
+    visited[current] = true;
+    v.markVertex(current, VertexStatus::Active);
+
+    // Verarbeite alle Nachbarn
+    auto neighbors = g.getNeighbors(current);
+    for (const auto &[neighbor, edgeCost] : neighbors)
+    {
+      CostT newCost = currentCost + edgeCost;
+
+      // Aktualisiere die Distanz, wenn wir einen kürzeren Pfad gefunden haben
+      if (newCost < kostenZumStart[neighbor])
+      {
+        kostenZumStart[neighbor] = newCost;
+        pq.push({newCost, neighbor});
+        v.markEdge({current, neighbor}, EdgeStatus::Active);
+        v.updateVertex(neighbor, newCost, 0.0, current, VertexStatus::InQueue);
+      }
+    }
+
+    v.markVertex(current, VertexStatus::Done);
+    v.draw();
+  }
 }
 
 bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
@@ -253,5 +301,4 @@ int main()
 
   // Loese die in der Aufgabenstellung beschriebenen Probleme fuer die jeweilige
   // Datei PruefeDijkstra / PruefeWeg
-
 }
