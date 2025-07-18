@@ -5,6 +5,8 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
+#include <list>
 
 // Structure to hold vertex visualization data
 struct VertexData {
@@ -14,6 +16,8 @@ struct VertexData {
     VertexT parent = undefinedVertex;
     sf::Vector2f position;
     bool showLabels = true;
+    bool isCurrentlyActive = false;      // Currently being examined
+    bool isNeighborInQueue = false;      // Neighbor being added to queue
 };
 
 // Structure to hold edge visualization data
@@ -22,6 +26,7 @@ struct EdgeData {
     CostT weight = 0.0;
     VertexT from;
     VertexT to;
+    bool isOnOptimalPath = false;
 };
 
 // Base class for SFML-based visualizers
@@ -33,26 +38,28 @@ protected:
     std::unordered_map<std::size_t, EdgeData> edgeData;
     
     // Visualization control
-    bool isPaused = false;
+    bool fastForward = true;
     bool stepMode = false;
-    int animationSpeed = 50; // milliseconds delay
+    int animationSpeed = 750; // milliseconds delay
     bool algorithmFinished = false;
     std::list<VertexT> finalPath;
+    bool showLabels = true;
+    
+    // Current algorithm state
+    VertexT currentActiveVertex = undefinedVertex;
+    std::unordered_set<VertexT> currentNeighbors;
+    
+    // Helper methods
+    bool shouldProceed() const;
     
     // Colors for different states
-    sf::Color getVertexColor(VertexStatus status);
+    sf::Color getVertexColor(const VertexData& data);
     sf::Color getEdgeColor(EdgeStatus status);
     
-    // Helper function to create edge key
+    // Helper functions
     std::size_t getEdgeKey(VertexT from, VertexT to);
-    
-    // Helper function to draw text
-    void drawText(const std::string& text, sf::Vector2f position, int size = 12);
-    
-    // Event handling
+    void drawText(const std::string& text, sf::Vector2f position, int size = 12, sf::Color color = sf::Color::Black);
     virtual void handleEvents();
-    
-    // Draw help text
     void drawHelpText();
 
 public:
@@ -66,14 +73,18 @@ public:
                      VertexT parent, VertexStatus status) override;
     void draw() override;
     
-    // Additional methods
-    bool isOpen() const { return window.isOpen(); }
-    void toggleLabels();
+    // Enhanced methods for better visualization
+    void setCurrentActiveVertex(VertexT vertex);
+    void clearCurrentNeighbors();
+    void addCurrentNeighbor(VertexT vertex);
     void setFinalPath(const std::list<VertexT>& path);
     void markAlgorithmFinished();
-    
-    // Method to set edge weight (needed for visualization)
     void setEdgeWeight(VertexT from, VertexT to, CostT weight);
+    void markOptimalPathEdges(const std::list<VertexT>& path);
+    
+    // Control methods
+    bool isOpen() const { return window.isOpen(); }
+    void toggleLabels();
 };
 
 // Maze-specific visualizer
@@ -81,21 +92,19 @@ class MazeVisualizer : public SFMLVisualizer {
 private:
     std::size_t mazeWidth, mazeHeight;
     float cellSize;
-    std::vector<std::vector<bool>> walls;
+    std::vector<std::vector<bool>> passableAreas; // true = passable, false = wall
+    VertexT startVertex, goalVertex;
     
-    // Convert vertex ID to maze coordinates
+    // Helper methods
     sf::Vector2i vertexToMazeCoord(VertexT vertex);
-    
-    // Convert maze coordinates to screen position
     sf::Vector2f mazeCoordToScreen(int row, int col);
-    
-    // Draw the maze content (separate from window management)
     void drawMazeContent();
 
 public:
     MazeVisualizer(int windowWidth, int windowHeight, 
                    std::size_t mazeW, std::size_t mazeH,
-                   const std::vector<std::vector<bool>>& wallData);
+                   const std::vector<std::vector<bool>>& passable,
+                   VertexT start, VertexT goal);
     
     void draw() override;
 };
@@ -107,10 +116,9 @@ private:
     sf::Vector2f minCoord, maxCoord;
     float scaleFactor;
     
-    // Convert graph coordinates to screen coordinates
+    // Helper methods
     sf::Vector2f graphCoordToScreen(double x, double y);
-    
-    // Draw edges
+    void drawArrow(sf::Vector2f from, sf::Vector2f to, sf::Color color, float thickness = 2.0f);
     void drawEdges();
     void drawNodes();
 

@@ -1,7 +1,8 @@
-
 #include "astern/text_visualizer.h"
 #include "astern/unit.h"
+#ifdef SFML_ENABLED
 #include "astern/sfml_visualizer.h"
+#endif
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -11,6 +12,7 @@
 #include <unordered_set>
 #include <list>
 #include <memory>
+#include <limits>
 
 // Ein Graph, der Koordinaten von Knoten speichert.
 class CoordinateGraph : public DistanceGraph
@@ -21,12 +23,6 @@ private:
 
 public:
   CoordinateGraph() = default;
-
-  // Koordinaten für Visualisierung
-  const std::vector<std::pair<double, double>> &getCoordinates() const
-  {
-    return coordinates;
-  }
 
   const NeighborT getNeighbors(VertexT v) const override
   {
@@ -71,6 +67,25 @@ public:
     return infty;
   }
 
+  // Vis: Methoden für die SFML-Visualisierung
+  const std::vector<std::pair<double, double>> &getCoordinates() const
+  {
+    return coordinates;
+  }
+
+  std::vector<std::tuple<VertexT, VertexT, CostT>> getAllEdges() const
+  {
+    std::vector<std::tuple<VertexT, VertexT, CostT>> edges;
+    for (VertexT from = 0; from < vertexCount; ++from)
+    {
+      for (const auto &edge : adjacencyList[from])
+      {
+        edges.emplace_back(from, edge.first, edge.second);
+      }
+    }
+    return edges;
+  }
+
   // Eingabe-Operator für das Einlesen von koordinatenbasierten Graphdateien (Graph1-4)
   friend std::istream &operator>>(std::istream &is, CoordinateGraph &graph)
   {
@@ -108,7 +123,7 @@ class MazeGraph : public DistanceGraph
 private:
   std::size_t width, height;
   std::vector<std::vector<bool>> passable; // true if cell is passable
-  VertexT startVertex, goalVertex;
+  VertexT startVertex = undefinedVertex, goalVertex = undefinedVertex;
 
   // Konvertiere 2D-Koordinaten in die Vertex-ID (row-major order)
   VertexT coordToVertex(std::size_t row, std::size_t col) const
@@ -124,11 +139,6 @@ private:
 
 public:
   MazeGraph() = default;
-
-  // Getter für Visualisierung
-  const std::vector<std::vector<bool>> &getWalls() const { return passable; }
-  std::size_t getWidth() const { return width; }
-  std::size_t getHeight() const { return height; }
 
   const NeighborT getNeighbors(VertexT v) const override
   {
@@ -184,6 +194,15 @@ public:
     return infty;
   }
 
+  // Vis: Methoden für die SFML-Visualisierung
+  const std::vector<std::vector<bool>> &getWalls() const
+  {
+    return passable; // Note: this returns passable areas, not walls
+  }
+
+  std::size_t getWidth() const { return width; }
+  std::size_t getHeight() const { return height; }
+
   // Zusätzliche Methoden (nicht in der Basisklassen-Schnittstelle)
   VertexT getStartVertex() const { return startVertex; }
   VertexT getGoalVertex() const { return goalVertex; }
@@ -199,7 +218,7 @@ public:
     {
       std::string line;
       is >> line;
-      for (std::size_t col = 0; col < graph.width; ++col)
+      for (std::size_t col = 0; col < graph.width && col < line.size(); ++col)
       {
         if (line[col] == '.')
         {
@@ -208,6 +227,44 @@ public:
         else if (line[col] == '#')
         {
           graph.passable[row][col] = false;
+        }
+        else if (line[col] == 'S' || line[col] == 's')
+        {
+          graph.passable[row][col] = true;
+          graph.startVertex = graph.coordToVertex(row, col);
+        }
+        else if (line[col] == 'G' || line[col] == 'g' || line[col] == 'E' || line[col] == 'e')
+        {
+          graph.passable[row][col] = true;
+          graph.goalVertex = graph.coordToVertex(row, col);
+        }
+      }
+    }
+
+    // Vis: Automatische Zuweisung von Start/Ziel, falls nicht gefunden
+    if (graph.startVertex == undefinedVertex || graph.goalVertex == undefinedVertex)
+    {
+      // Erst passierbare Zelle für Start finden
+      for (std::size_t row = 0; row < graph.height && graph.startVertex == undefinedVertex; ++row)
+      {
+        for (std::size_t col = 0; col < graph.width && graph.startVertex == undefinedVertex; ++col)
+        {
+          if (graph.passable[row][col])
+          {
+            graph.startVertex = graph.coordToVertex(row, col);
+          }
+        }
+      }
+
+      // Finde letzte passierbare Zelle für Ziel
+      for (int row = graph.height - 1; row >= 0 && graph.goalVertex == undefinedVertex; --row)
+      {
+        for (int col = graph.width - 1; col >= 0 && graph.goalVertex == undefinedVertex; --col)
+        {
+          if (graph.passable[row][col])
+          {
+            graph.goalVertex = graph.coordToVertex(row, col);
+          }
         }
       }
     }
@@ -300,6 +357,26 @@ void Dijkstra(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
   }
 }
 
+// Vis: Funktion zum Offenhalten des SFML-Fensters nach Abschluss des Algorithmus
+#ifdef SFML_ENABLED
+void keepSFMLWindowOpen(GraphVisualizer &v)
+{
+  if (auto *sfmlViz = dynamic_cast<SFMLVisualizer *>(&v))
+  {
+    std::cout << "\n=== Algorithmus abgeschlossen! ===" << std::endl;
+    std::cout << "Das Fenster zeigt das endgültige Ergebnis mit dem hervorgehobenen optimalen Pfad." << std::endl;
+    std::cout << "Steuerung: SPACE=Pause, L=Labels umschalten, +/-=Geschwindigkeit, ESC=Beenden" << std::endl;
+
+    while (sfmlViz->isOpen())
+    {
+      sf::sleep(sf::milliseconds(100));
+      sfmlViz->draw();
+    }
+  }
+}
+#endif
+
+// A* algorithm
 bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
             VertexT ziel, std::list<VertexT> &weg)
 {
@@ -327,10 +404,6 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
 
   openSet.push({fScore[start], start});
   v.markVertex(start, VertexStatus::InQueue);
-  v.draw();
-
-  std::cout << "A* algorithm started. Use controls in the visualization window!" << std::endl;
-  std::cout << "Controls: SPACE=Pause, S=Step mode, +/-=Speed, H=Help" << std::endl;
 
   while (!openSet.empty())
   {
@@ -341,9 +414,17 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
     if (closedSet.count(current))
       continue;
 
+// Vis: Aktiviere aktuellen Knoten für SFML-Visualisierung
+#ifdef SFML_ENABLED
+    if (auto *sfmlViz = dynamic_cast<SFMLVisualizer *>(&v))
+    {
+      sfmlViz->setCurrentActiveVertex(current);
+      sfmlViz->clearCurrentNeighbors();
+    }
+#endif
+
     // Als aktiv markieren
     v.markVertex(current, VertexStatus::Active);
-    v.draw();
 
     // Überprüfen, ob wir das Ziel erreicht haben
     if (current == ziel)
@@ -359,25 +440,18 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
         node = parent[node];
       }
 
-      // Benachrichtige den Visualizer über den finalen Pfad und den Abschluss des Algorithmus
-      if (auto* sfmlViz = dynamic_cast<SFMLVisualizer*>(&v)) {
+// Vis: Aktiviere den endgültigen Pfad und markiere den Abschluss des Algorithmus für SFML
+#ifdef SFML_ENABLED
+      if (auto *sfmlViz = dynamic_cast<SFMLVisualizer *>(&v))
+      {
         sfmlViz->setFinalPath(weg);
+        sfmlViz->markOptimalPathEdges(weg);
         sfmlViz->markAlgorithmFinished();
+        v.draw();              // Draw final state
+        keepSFMLWindowOpen(v); // Keep window open to show result
       }
-      
-      v.draw();
-      
-      std::cout << "Path found! Length: " << weg.size() - 1 << std::endl;
-      std::cout << "Visualization will show the final path. Press ESC to close." << std::endl;
-      
-      // Keep window open to show final result
-      if (auto* sfmlViz = dynamic_cast<SFMLVisualizer*>(&v)) {
-        while (sfmlViz->isOpen()) {
-          sf::sleep(sf::milliseconds(100));
-          sfmlViz->draw();
-        }
-      }
-      
+#endif
+
       return true;
     }
 
@@ -402,12 +476,16 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
 
         openSet.push({fScore[neighbor], neighbor});
         v.markEdge({current, neighbor}, EdgeStatus::Active);
-        
-        // Store edge weight for route graph visualization
-        if (auto* sfmlViz = dynamic_cast<SFMLVisualizer*>(&v)) {
+
+// Vis: Aktiviere Nachbarn und setze Kantengewicht für SFML-Visualisierung
+#ifdef SFML_ENABLED
+        if (auto *sfmlViz = dynamic_cast<SFMLVisualizer *>(&v))
+        {
+          sfmlViz->addCurrentNeighbor(neighbor);
           sfmlViz->setEdgeWeight(current, neighbor, edgeCost);
         }
-        
+#endif
+
         v.updateVertex(neighbor, gScore[neighbor],
                        g.estimatedCost(neighbor, ziel), current,
                        VertexStatus::InQueue);
@@ -416,35 +494,35 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
     v.draw();
   }
 
-  std::cout << "No path found!" << std::endl;
-  
-  // Keep window open even if no path found
-  if (auto* sfmlViz = dynamic_cast<SFMLVisualizer*>(&v)) {
+// Vis: Algorithmus abgeschlossen, auch wenn kein Pfad gefunden wurde
+#ifdef SFML_ENABLED
+  if (auto *sfmlViz = dynamic_cast<SFMLVisualizer *>(&v))
+  {
     sfmlViz->markAlgorithmFinished();
-    while (sfmlViz->isOpen()) {
-      sf::sleep(sf::milliseconds(100));
-      sfmlViz->draw();
-    }
+    keepSFMLWindowOpen(v);
   }
+#endif
 
   return false; // Kein Pfad gefunden.
 }
 
 int main()
 {
-  // Ask for example number and visualization type
+  // Frage Beispielnummer vom User ab
+  std::cout << "=== A* Algorithm Visualization ===" << std::endl;
   std::cout << "Geben Sie die Beispielnummer ein (1-10): ";
   int beispiel;
   std::cin >> beispiel;
 
-  std::cout << "Welche Visualisierung möchten Sie verwenden?" << std::endl;
+  // Vis: Visualisierungsauswahl
+  int visualChoice = 1; // Default to text
+#ifdef SFML_ENABLED
+  std::cout << "\nWelche Visualisierung möchten Sie verwenden?" << std::endl;
   std::cout << "1. Text-Visualisierung" << std::endl;
   std::cout << "2. SFML-Visualisierung" << std::endl;
   std::cout << "Ihre Wahl (1 oder 2): ";
-  int visualChoice;
   std::cin >> visualChoice;
-
-  std::unique_ptr<GraphVisualizer> visualizer;
+#endif
 
   if (beispiel >= 1 && beispiel <= 4)
   {
@@ -462,21 +540,6 @@ int main()
     file >> graph;
     file.close();
 
-    // Erstelle den entsprechenden Visualizer
-    if (visualChoice == 2)
-    {
-      // Window sizes as suggested in the PDF
-      int width = (beispiel == 3) ? 1300 : ((beispiel == 4) ? 700 : 1000);
-      int height = (beispiel == 3) ? 800 : ((beispiel == 4) ? 800 : 1000);
-
-      visualizer = std::make_unique<RouteGraphVisualizer>(
-          width, height, graph.getCoordinates());
-    }
-    else
-    {
-      visualizer = std::make_unique<TextVisualizer>();
-    }
-
     // PruefeHeuristik
     if (!PruefeHeuristik(graph))
     {
@@ -487,41 +550,87 @@ int main()
     std::cout << "Graph geladen. Anzahl Knoten: " << graph.numVertices() << std::endl;
     std::cout << "Heuristik ist zulässig." << std::endl;
 
-    // Löse die in der Aufgabenstellung beschriebenen Probleme für route graphs
-    std::cout << "Teste Dijkstra für alle Startknoten..." << std::endl;
-    for (VertexT start = 0; start < graph.numVertices(); ++start)
+    // Vis: Erstelle Visualizer basierend auf der Wahl
+    std::unique_ptr<GraphVisualizer> visualizer;
+    if (visualChoice == 2)
     {
-      std::vector<CostT> distances;
-      Dijkstra(graph, *visualizer, start, distances);
-      PruefeDijkstra(beispiel, start, distances);
-    }
-    std::cout << "Dijkstra-Tests erfolgreich!" << std::endl;
+#ifdef SFML_ENABLED
+      // Fenstergrößen wie im PDF empfohlen
+      int width = (beispiel == 3) ? 1300 : ((beispiel == 4) ? 700 : 1000);
+      int height = (beispiel == 3) ? 800 : ((beispiel == 4) ? 800 : 1000);
 
-    std::cout << "Drücken Sie die Eingabetaste, um fortzufahren..." << std::endl;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // clear leftover input
-    std::cin.get();
+      auto routeViz = std::make_unique<RouteGraphVisualizer>(
+          width, height, graph.getCoordinates());
 
-    // Testen A* für alle Knotenpaare
-    std::cout << "Teste A* für alle Knotenpaare..." << std::endl;
-    for (VertexT start = 0; start < graph.numVertices(); ++start)
-    {
-      for (VertexT goal = 0; goal < graph.numVertices(); ++goal)
+      // Alle Kanten für die Visualisierung vorladen
+      auto edges = graph.getAllEdges();
+      std::cout << "Loading " << edges.size() << " edges for visualization..." << std::endl;
+      for (const auto &[from, to, weight] : edges)
       {
-        if (start != goal)
+        routeViz->setEdgeWeight(from, to, weight);
+        routeViz->markEdge({from, to}, EdgeStatus::UnknownEdge);
+      }
+
+      visualizer = std::move(routeViz);
+      std::cout << "SFML-Visualisierung aktiviert!" << std::endl;
+      std::cout << "Controls: SPACE=Pause, S=Step, L=Labels, +/-=Speed, H=Help, ESC=Exit" << std::endl;
+#endif
+    }
+    else
+    {
+      visualizer = std::make_unique<TextVisualizer>();
+    }
+
+    if (visualChoice == 2)
+    {
+      // SFML: Zeige eine repräsentative A*-Visualisierung
+      VertexT goal = std::min(static_cast<VertexT>(graph.numVertices() - 2), static_cast<VertexT>(5));
+      std::cout << "\nZeige A*-Visualisierung von Knoten 1 zu Knoten " << goal << std::endl;
+      std::list<VertexT> path;
+      if (A_star(graph, *visualizer, 1, goal, path))
+      {
+        PruefeWeg(beispiel, path);
+        std::cout << "Visualisierung abgeschlossen." << std::endl;
+      }
+    }
+    else
+    {
+      // Text mode: Run ALL comprehensive tests (as in your original code)
+      std::cout << "Teste Dijkstra für alle Startknoten..." << std::endl;
+      for (VertexT start = 0; start < graph.numVertices(); ++start)
+      {
+        std::vector<CostT> distances;
+        Dijkstra(graph, *visualizer, start, distances);
+        PruefeDijkstra(beispiel, start, distances);
+      }
+      std::cout << "Dijkstra-Tests erfolgreich!" << std::endl;
+
+      std::cout << "Drücken Sie die Eingabetaste, um fortzufahren..." << std::endl;
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // clear leftover input
+      std::cin.get();
+
+      // Testen A* für alle Knotenpaare
+      std::cout << "Teste A* für alle Knotenpaare..." << std::endl;
+      for (VertexT start = 0; start < graph.numVertices(); ++start)
+      {
+        for (VertexT goal = 0; goal < graph.numVertices(); ++goal)
         {
-          std::list<VertexT> path;
-          if (A_star(graph, *visualizer, start, goal, path))
+          if (start != goal)
           {
-            PruefeWeg(beispiel, path);
-          }
-          else
-          {
-            std::cout << "Kein Weg von " << start << " zu " << goal << " gefunden." << std::endl;
+            std::list<VertexT> path;
+            if (A_star(graph, *visualizer, start, goal, path))
+            {
+              PruefeWeg(beispiel, path);
+            }
+            else
+            {
+              std::cout << "Kein Weg von " << start << " zu " << goal << " gefunden." << std::endl;
+            }
           }
         }
       }
+      std::cout << "A*-Tests erfolgreich!" << std::endl;
     }
-    std::cout << "A*-Tests erfolgreich!" << std::endl;
   }
   else if (beispiel >= 5 && beispiel <= 9)
   {
@@ -539,17 +648,6 @@ int main()
     file >> graph;
     file.close();
 
-    // Create appropriate visualizer
-    if (visualChoice == 2)
-    {
-      visualizer = std::make_unique<MazeVisualizer>(
-          1000, 1000, graph.getWidth(), graph.getHeight(), graph.getWalls());
-    }
-    else
-    {
-      visualizer = std::make_unique<TextVisualizer>();
-    }
-
     // PruefeHeuristik
     if (!PruefeHeuristik(graph))
     {
@@ -559,6 +657,26 @@ int main()
 
     std::cout << "Labyrinth geladen. Anzahl Knoten: " << graph.numVertices() << std::endl;
     std::cout << "Heuristik ist zulässig." << std::endl;
+
+    // Vis: Erstelle Visualizer basierend auf der Wahl
+    std::unique_ptr<GraphVisualizer> visualizer;
+    if (visualChoice == 2)
+    {
+#ifdef SFML_ENABLED
+      visualizer = std::make_unique<MazeVisualizer>(
+          800, 800,
+          graph.getWidth(), graph.getHeight(),
+          graph.getWalls(),
+          graph.getStartVertex(),
+          graph.getGoalVertex());
+      std::cout << "SFML-Visualisierung aktiviert!" << std::endl;
+      std::cout << "Controls: SPACE=Pause, S=Step, L=Labels, +/-=Speed, H=Help, ESC=Exit" << std::endl;
+#endif
+    }
+    else
+    {
+      visualizer = std::make_unique<TextVisualizer>();
+    }
 
     // Löse die in der Aufgabenstellung beschriebenen Probleme für maze graphs
     // Bestimme Start-Ziel-Paare für dieses Beispiel
@@ -599,6 +717,28 @@ int main()
 
     std::cout << "Zufälliges Labyrinth erzeugt. Größe: " << width << "x" << height << std::endl;
     std::cout << "Heuristik ist zulässig." << std::endl;
+
+    // ENHANCED: Create visualizer based on choice
+    std::unique_ptr<GraphVisualizer> visualizer;
+    if (visualChoice == 2)
+    {
+#ifdef SFML_ENABLED
+      // Verwende kleinere Anzeige für bessere Visualisierung großer Labyrinthe
+      visualizer = std::make_unique<MazeVisualizer>(
+          800, 800,
+          graph.getWidth(), graph.getHeight(),
+          graph.getWalls(),
+          graph.getStartVertex(),
+          graph.getGoalVertex());
+      std::cout << "SFML-Visualisierung aktiviert!" << std::endl;
+      std::cout << "Large maze - use L to toggle labels for better performance!" << std::endl;
+      std::cout << "Controls: SPACE=Pause, S=Step, L=Labels, +/-=Speed, H=Help, ESC=Exit" << std::endl;
+#endif
+    }
+    else
+    {
+      visualizer = std::make_unique<TextVisualizer>();
+    }
 
     // Löse die in der Aufgabenstellung beschriebenen Probleme für random maze
     // Finde den Pfad vom Start- zum Zielknoten
