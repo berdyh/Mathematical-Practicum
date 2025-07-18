@@ -66,16 +66,26 @@ mapra_add_test(example_test)
 # Add Binaries
 # ##############################################################################
 
-# hier muesst ihr eure weiteren Dateien, also Abhaengigkeiten, hinzufuegen
-add_executable(a_stern src/a_stern.cpp ${a_stern_unit})
-
 # Setzt diese Variable auf ON, wenn ihr Teil b bearbeitet
 option(teil_b "use SFML for part b" ON)
+
+# Prepare source files for a_stern
+set(a_stern_sources src/a_stern.cpp ${a_stern_unit})
+
+# Add SFML visualizer sources if teil_b is enabled
+if(teil_b)
+  list(APPEND a_stern_sources src/sfml_visualizer.cpp)
+endif()
+
+# there you must add your additional files, i.e. dependencies
+add_executable(a_stern ${a_stern_sources})
 
 # ##############################################################################
 
 if(teil_b)
   message(STATUS "teil_b is ${teil_b}")
+  # Define SFML_ENABLED preprocessor macro when SFML is used
+  target_compile_definitions(a_stern PRIVATE SFML_ENABLED)
 endif()
 
 set_target_properties(a_stern PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED

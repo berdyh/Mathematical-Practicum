@@ -1,6 +1,7 @@
 
 #include "astern/text_visualizer.h"
 #include "astern/unit.h"
+#include "astern/sfml_visualizer.h"
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -9,6 +10,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include <list>
+#include <memory>
 
 // Ein Graph, der Koordinaten von Knoten speichert.
 class CoordinateGraph : public DistanceGraph
@@ -19,6 +21,12 @@ private:
 
 public:
   CoordinateGraph() = default;
+
+  // Koordinaten für Visualisierung
+  const std::vector<std::pair<double, double>> &getCoordinates() const
+  {
+    return coordinates;
+  }
 
   const NeighborT getNeighbors(VertexT v) const override
   {
@@ -116,6 +124,11 @@ private:
 
 public:
   MazeGraph() = default;
+
+  // Getter für Visualisierung
+  const std::vector<std::vector<bool>> &getWalls() const { return passable; }
+  std::size_t getWidth() const { return width; }
+  std::size_t getHeight() const { return height; }
 
   const NeighborT getNeighbors(VertexT v) const override
   {
@@ -377,12 +390,19 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
 
 int main()
 {
-  // Frage Beispielnummer vom User ab
+  // Ask for example number and visualization type
   std::cout << "Geben Sie die Beispielnummer ein (1-10): ";
   int beispiel;
   std::cin >> beispiel;
 
-  TextVisualizer visualizer;
+  std::cout << "Welche Visualisierung möchten Sie verwenden?" << std::endl;
+  std::cout << "1. Text-Visualisierung" << std::endl;
+  std::cout << "2. SFML-Visualisierung" << std::endl;
+  std::cout << "Ihre Wahl (1 oder 2): ";
+  int visualChoice;
+  std::cin >> visualChoice;
+
+  std::unique_ptr<GraphVisualizer> visualizer;
 
   if (beispiel >= 1 && beispiel <= 4)
   {
@@ -400,6 +420,21 @@ int main()
     file >> graph;
     file.close();
 
+    // Erstelle den entsprechenden Visualizer
+    if (visualChoice == 2)
+    {
+      // Window sizes as suggested in the PDF
+      int width = (beispiel == 3) ? 1300 : ((beispiel == 4) ? 700 : 1000);
+      int height = (beispiel == 3) ? 800 : ((beispiel == 4) ? 800 : 1000);
+
+      visualizer = std::make_unique<RouteGraphVisualizer>(
+          width, height, graph.getCoordinates());
+    }
+    else
+    {
+      visualizer = std::make_unique<TextVisualizer>();
+    }
+
     // PruefeHeuristik
     if (!PruefeHeuristik(graph))
     {
@@ -415,7 +450,7 @@ int main()
     for (VertexT start = 0; start < graph.numVertices(); ++start)
     {
       std::vector<CostT> distances;
-      Dijkstra(graph, visualizer, start, distances);
+      Dijkstra(graph, *visualizer, start, distances);
       PruefeDijkstra(beispiel, start, distances);
     }
     std::cout << "Dijkstra-Tests erfolgreich!" << std::endl;
@@ -433,7 +468,7 @@ int main()
         if (start != goal)
         {
           std::list<VertexT> path;
-          if (A_star(graph, visualizer, start, goal, path))
+          if (A_star(graph, *visualizer, start, goal, path))
           {
             PruefeWeg(beispiel, path);
           }
@@ -462,6 +497,17 @@ int main()
     file >> graph;
     file.close();
 
+    // Create appropriate visualizer
+    if (visualChoice == 2)
+    {
+      visualizer = std::make_unique<MazeVisualizer>(
+          1000, 1000, graph.getWidth(), graph.getHeight(), graph.getWalls());
+    }
+    else
+    {
+      visualizer = std::make_unique<TextVisualizer>();
+    }
+
     // PruefeHeuristik
     if (!PruefeHeuristik(graph))
     {
@@ -480,7 +526,7 @@ int main()
     for (const auto &[start, goal] : pairs)
     {
       std::list<VertexT> path;
-      if (A_star(graph, visualizer, start, goal, path))
+      if (A_star(graph, *visualizer, start, goal, path))
       {
         PruefeWeg(beispiel, path);
         std::cout << "Weg von " << start << " zu " << goal << " gefunden (Länge: " << path.size() - 1 << ")" << std::endl;
@@ -500,7 +546,7 @@ int main()
 
     auto mazeData = ErzeugeLabyrinth(width, height, seed);
     MazeGraph graph(mazeData, width, height);
-    
+
     std::cout << "Prüfe Heuristik für zufälliges Labyrinth..." << std::endl;
     // PruefeHeuristik
     if (!PruefeHeuristik(graph))
@@ -519,7 +565,7 @@ int main()
 
     std::cout << "Teste A* im zufälligen Labyrinth von " << start << " zu " << goal << "..." << std::endl;
     std::list<VertexT> path;
-    if (A_star(graph, visualizer, start, goal, path))
+    if (A_star(graph, *visualizer, start, goal, path))
     {
       PruefeWeg(beispiel, path);
       std::cout << "Weg gefunden! Länge: " << path.size() - 1 << std::endl;
