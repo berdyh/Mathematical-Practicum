@@ -7,6 +7,8 @@
 #include <fstream>
 #include <queue>
 #include <algorithm>
+#include <unordered_set>
+#include <list>
 
 // Ein Graph, der Koordinaten von Knoten speichert.
 class CoordinateGraph : public DistanceGraph
@@ -271,7 +273,7 @@ void Dijkstra(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
       CostT newCost = currentCost + edgeCost;
 
       // Aktualisiere die Distanz, wenn wir einen kürzeren Pfad gefunden haben
-      if (newCost < kostenZumStart[neighbor])
+      if (visited[neighbor] || newCost < kostenZumStart[neighbor])
       {
         kostenZumStart[neighbor] = newCost;
         pq.push({newCost, neighbor});
@@ -288,8 +290,89 @@ void Dijkstra(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
 bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
             VertexT ziel, std::list<VertexT> &weg)
 {
-  // ...
-  return false; // Kein Weg gefunden.
+  // Frühzeitige Rückgabe, wenn Start gleich Ziel
+  if (start == ziel)
+  {
+    weg.push_back(start);
+    return true;
+  }
+
+  std::size_t n = g.numVertices();
+  std::vector<CostT> gScore(n, infty); // Kosten von Start zu Vertex
+  std::vector<CostT> fScore(n, infty); // gScore + Heuristik
+  std::vector<VertexT> parent(n, undefinedVertex);
+  std::unordered_set<VertexT> closedSet;
+
+  gScore[start] = 0.0;
+  fScore[start] = g.estimatedCost(start, ziel);
+
+  // Priority queue: (fScore, vertex) - min-heap
+  std::priority_queue<std::pair<CostT, VertexT>,
+                      std::vector<std::pair<CostT, VertexT>>,
+                      std::greater<std::pair<CostT, VertexT>>>
+      openSet;
+
+  openSet.push({fScore[start], start});
+  v.markVertex(start, VertexStatus::InQueue);
+
+  while (!openSet.empty())
+  {
+    auto [currentF, current] = openSet.top();
+    openSet.pop();
+
+    // Überspringen, wenn bereits verarbeitet
+    if (closedSet.count(current))
+      continue;
+
+    // Als aktiv markieren
+    v.markVertex(current, VertexStatus::Active);
+
+    // Überprüfen, ob wir das Ziel erreicht haben
+    if (current == ziel)
+    {
+      v.markVertex(current, VertexStatus::Destination);
+
+      // Rekonstruiere den Pfad mit Hilfe der Parent-Liste
+      weg.clear();
+      VertexT node = ziel;
+      while (node != undefinedVertex)
+      {
+        weg.push_front(node);
+        node = parent[node];
+      }
+      return true;
+    }
+
+    closedSet.insert(current);
+    v.markVertex(current, VertexStatus::Done);
+
+    // Verarbeite Nachbarn
+    auto neighbors = g.getNeighbors(current);
+    for (const auto &[neighbor, edgeCost] : neighbors)
+    {
+      if (closedSet.count(neighbor))
+        continue;
+
+      CostT tentativeG = gScore[current] + edgeCost;
+
+      // Wenn wir einen besseren Pfad zum Nachbarn gefunden haben
+      if (tentativeG < gScore[neighbor])
+      {
+        parent[neighbor] = current;
+        gScore[neighbor] = tentativeG;
+        fScore[neighbor] = tentativeG + g.estimatedCost(neighbor, ziel);
+
+        openSet.push({fScore[neighbor], neighbor});
+        v.markEdge({current, neighbor}, EdgeStatus::Active);
+        v.updateVertex(neighbor, gScore[neighbor],
+                       g.estimatedCost(neighbor, ziel), current,
+                       VertexStatus::InQueue);
+      }
+    }
+    v.draw();
+  }
+
+  return false; // Kein Pfad gefunden.
 }
 
 int main()
