@@ -327,6 +327,10 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
 
   openSet.push({fScore[start], start});
   v.markVertex(start, VertexStatus::InQueue);
+  v.draw();
+
+  std::cout << "A* algorithm started. Use controls in the visualization window!" << std::endl;
+  std::cout << "Controls: SPACE=Pause, S=Step mode, +/-=Speed, H=Help" << std::endl;
 
   while (!openSet.empty())
   {
@@ -339,6 +343,7 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
 
     // Als aktiv markieren
     v.markVertex(current, VertexStatus::Active);
+    v.draw();
 
     // Überprüfen, ob wir das Ziel erreicht haben
     if (current == ziel)
@@ -353,6 +358,26 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
         weg.push_front(node);
         node = parent[node];
       }
+
+      // Benachrichtige den Visualizer über den finalen Pfad und den Abschluss des Algorithmus
+      if (auto* sfmlViz = dynamic_cast<SFMLVisualizer*>(&v)) {
+        sfmlViz->setFinalPath(weg);
+        sfmlViz->markAlgorithmFinished();
+      }
+      
+      v.draw();
+      
+      std::cout << "Path found! Length: " << weg.size() - 1 << std::endl;
+      std::cout << "Visualization will show the final path. Press ESC to close." << std::endl;
+      
+      // Keep window open to show final result
+      if (auto* sfmlViz = dynamic_cast<SFMLVisualizer*>(&v)) {
+        while (sfmlViz->isOpen()) {
+          sf::sleep(sf::milliseconds(100));
+          sfmlViz->draw();
+        }
+      }
+      
       return true;
     }
 
@@ -377,12 +402,29 @@ bool A_star(const DistanceGraph &g, GraphVisualizer &v, VertexT start,
 
         openSet.push({fScore[neighbor], neighbor});
         v.markEdge({current, neighbor}, EdgeStatus::Active);
+        
+        // Store edge weight for route graph visualization
+        if (auto* sfmlViz = dynamic_cast<SFMLVisualizer*>(&v)) {
+          sfmlViz->setEdgeWeight(current, neighbor, edgeCost);
+        }
+        
         v.updateVertex(neighbor, gScore[neighbor],
                        g.estimatedCost(neighbor, ziel), current,
                        VertexStatus::InQueue);
       }
     }
     v.draw();
+  }
+
+  std::cout << "No path found!" << std::endl;
+  
+  // Keep window open even if no path found
+  if (auto* sfmlViz = dynamic_cast<SFMLVisualizer*>(&v)) {
+    sfmlViz->markAlgorithmFinished();
+    while (sfmlViz->isOpen()) {
+      sf::sleep(sf::milliseconds(100));
+      sfmlViz->draw();
+    }
   }
 
   return false; // Kein Pfad gefunden.

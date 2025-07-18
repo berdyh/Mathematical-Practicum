@@ -2,13 +2,30 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <unordered_set>
 
 SFMLVisualizer::SFMLVisualizer(int width, int height, const std::string& title) 
     : window(sf::VideoMode(width, height), title) {
     
-    // Load font
-    if (!font.loadFromFile("data/font/BebasNeue-Regular.ttf")) {
-        std::cerr << "Warning: Could not load font. Text will not be displayed." << std::endl;
+    // Try different font paths
+    std::vector<std::string> fontPaths = {
+        "data/font/BebasNeue-Regular.ttf",
+        "font/BebasNeue-Regular.ttf",
+        "../data/font/BebasNeue-Regular.ttf",
+        "./data/font/BebasNeue-Regular.ttf"
+    };
+    
+    bool fontLoaded = false;
+    for (const auto& path : fontPaths) {
+        if (font.loadFromFile(path)) {
+            std::cout << "Font loaded successfully from: " << path << std::endl;
+            fontLoaded = true;
+            break;
+        }
+    }
+    
+    if (!fontLoaded) {
+        std::cerr << "Warning: Could not load font from any path. Text will not be displayed." << std::endl;
     }
     
     // Set window properties
@@ -71,12 +88,71 @@ void SFMLVisualizer::handleEvents() {
             window.close();
         }
         else if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::L) {
-                toggleLabels();
+            switch (event.key.code) {
+                case sf::Keyboard::Escape:
+                    window.close();
+                    break;
+                case sf::Keyboard::Space:
+                    isPaused = !isPaused;
+                    std::cout << (isPaused ? "Paused" : "Resumed") << std::endl;
+                    break;
+                case sf::Keyboard::S:
+                    stepMode = !stepMode;
+                    std::cout << (stepMode ? "Step mode ON" : "Step mode OFF") << std::endl;
+                    break;
+                case sf::Keyboard::L:
+                    toggleLabels();
+                    std::cout << "Labels toggled" << std::endl;
+                    break;
+                case sf::Keyboard::Equal: // + key
+                case sf::Keyboard::Add:
+                    animationSpeed = std::max(10, animationSpeed - 10);
+                    std::cout << "Speed increased (delay: " << animationSpeed << "ms)" << std::endl;
+                    break;
+                case sf::Keyboard::Dash: // - key
+                case sf::Keyboard::Subtract:
+                    animationSpeed = std::min(500, animationSpeed + 10);
+                    std::cout << "Speed decreased (delay: " << animationSpeed << "ms)" << std::endl;
+                    break;
+                case sf::Keyboard::Enter:
+                    if (stepMode) {
+                        isPaused = false; // Allow one step
+                    }
+                    break;
+                case sf::Keyboard::H:
+                    std::cout << "\n=== CONTROLS ===" << std::endl;
+                    std::cout << "ESC: Close window" << std::endl;
+                    std::cout << "SPACE: Pause/Resume" << std::endl;
+                    std::cout << "S: Toggle step mode" << std::endl;
+                    std::cout << "L: Toggle labels" << std::endl;
+                    std::cout << "+/-: Increase/Decrease speed" << std::endl;
+                    std::cout << "ENTER: Next step (in step mode)" << std::endl;
+                    std::cout << "H: Show this help" << std::endl;
+                    break;
             }
-            else if (event.key.code == sf::Keyboard::Escape) {
-                window.close();
-            }
+        }
+    }
+}
+
+void SFMLVisualizer::drawHelpText() {
+    if (!font.getInfo().family.empty()) {
+        std::string helpText = "Controls: SPACE=Pause, S=Step, L=Labels, +/-=Speed, H=Help, ESC=Exit";
+        sf::Text text;
+        text.setFont(font);
+        text.setString(helpText);
+        text.setCharacterSize(12);
+        text.setFillColor(sf::Color::Black);
+        text.setPosition(10, 10);
+        window.draw(text);
+        
+        if (algorithmFinished) {
+            sf::Text finishedText;
+            finishedText.setFont(font);
+            finishedText.setString("Algorithm finished! Press ESC to exit.");
+            finishedText.setCharacterSize(14);
+            finishedText.setFillColor(sf::Color::Red);
+            finishedText.setPosition(10, 30);
+            window.draw(finishedText);
         }
     }
 }
@@ -101,16 +177,42 @@ void SFMLVisualizer::updateVertex(VertexT vertex, double cost, double estimate,
     data.parent = parent;
 }
 
+void SFMLVisualizer::setFinalPath(const std::list<VertexT>& path) {
+    finalPath = path;
+}
+
+void SFMLVisualizer::markAlgorithmFinished() {
+    algorithmFinished = true;
+}
+
 void SFMLVisualizer::draw() {
     handleEvents();
+    
+    // Handle pause and step mode
+    if (isPaused || stepMode) {
+        if (stepMode && !isPaused) {
+            isPaused = true; // Pause after one step
+        } else if (isPaused) {
+            // Just handle events and redraw, don't advance algorithm
+            window.clear(sf::Color::White);
+            // Derived classes will draw their content
+            drawHelpText();
+            window.display();
+            return;
+        }
+    }
+    
     window.clear(sf::Color::White);
     
     // Derived classes will implement specific drawing
+    drawHelpText();
     
     window.display();
     
-    // Add small delay to make visualization visible
-    sf::sleep(sf::milliseconds(50));
+    // Add delay based on animation speed
+    if (!algorithmFinished) {
+        sf::sleep(sf::milliseconds(animationSpeed));
+    }
 }
 
 void SFMLVisualizer::toggleLabels() {
@@ -156,7 +258,37 @@ sf::Vector2f MazeVisualizer::mazeCoordToScreen(int row, int col) {
 
 void MazeVisualizer::draw() {
     handleEvents();
+    
+    // Handle pause and step mode
+    if (isPaused || stepMode) {
+        if (stepMode && !isPaused) {
+            isPaused = true; // Pause after one step
+        } else if (isPaused) {
+            // Just redraw current state
+            window.clear(sf::Color::White);
+            drawMazeContent();
+            drawHelpText();
+            window.display();
+            return;
+        }
+    }
+    
     window.clear(sf::Color::White);
+    drawMazeContent();
+    drawHelpText();
+    window.display();
+    
+    if (!algorithmFinished) {
+        sf::sleep(sf::milliseconds(animationSpeed));
+    }
+}
+
+void MazeVisualizer::drawMazeContent() {
+    // Create set of final path vertices for highlighting
+    std::unordered_set<VertexT> pathVertices;
+    for (VertexT vertex : finalPath) {
+        pathVertices.insert(vertex);
+    }
     
     // Draw maze structure
     for (std::size_t row = 0; row < mazeHeight; ++row) {
@@ -170,11 +302,17 @@ void MazeVisualizer::draw() {
             } else {
                 // Passable area
                 VertexT vertex = row * mazeWidth + col;
-                auto it = vertexData.find(vertex);
-                if (it != vertexData.end()) {
-                    cell.setFillColor(getVertexColor(it->second.status));
+                
+                // Check if this vertex is part of the final path
+                if (algorithmFinished && pathVertices.count(vertex)) {
+                    cell.setFillColor(sf::Color(0, 255, 0, 180)); // Semi-transparent green for path
                 } else {
-                    cell.setFillColor(sf::Color::White);
+                    auto it = vertexData.find(vertex);
+                    if (it != vertexData.end()) {
+                        cell.setFillColor(getVertexColor(it->second.status));
+                    } else {
+                        cell.setFillColor(sf::Color::White);
+                    }
                 }
             }
             
@@ -199,9 +337,6 @@ void MazeVisualizer::draw() {
             }
         }
     }
-    
-    window.display();
-    sf::sleep(sf::milliseconds(50));
 }
 
 // RouteGraphVisualizer implementation

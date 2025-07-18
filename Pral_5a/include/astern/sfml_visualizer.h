@@ -32,6 +32,13 @@ protected:
     std::unordered_map<VertexT, VertexData> vertexData;
     std::unordered_map<std::size_t, EdgeData> edgeData;
     
+    // Visualization control
+    bool isPaused = false;
+    bool stepMode = false;
+    int animationSpeed = 50; // milliseconds delay
+    bool algorithmFinished = false;
+    std::list<VertexT> finalPath;
+    
     // Colors for different states
     sf::Color getVertexColor(VertexStatus status);
     sf::Color getEdgeColor(EdgeStatus status);
@@ -44,6 +51,9 @@ protected:
     
     // Event handling
     virtual void handleEvents();
+    
+    // Draw help text
+    void drawHelpText();
 
 public:
     SFMLVisualizer(int width, int height, const std::string& title);
@@ -59,6 +69,8 @@ public:
     // Additional methods
     bool isOpen() const { return window.isOpen(); }
     void toggleLabels();
+    void setFinalPath(const std::list<VertexT>& path);
+    void markAlgorithmFinished();
     
     // Method to set edge weight (needed for visualization)
     void setEdgeWeight(VertexT from, VertexT to, CostT weight);
@@ -76,6 +88,9 @@ private:
     
     // Convert maze coordinates to screen position
     sf::Vector2f mazeCoordToScreen(int row, int col);
+    
+    // Draw the maze content (separate from window management)
+    void drawMazeContent();
 
 public:
     MazeVisualizer(int windowWidth, int windowHeight, 
